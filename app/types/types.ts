@@ -10,6 +10,16 @@ interface AuthUser {
   expires_at: number;
 }
 
+export interface nonAuthUser {
+  href: string;
+  id: string;
+  type: "user";
+  uri: string;
+  external_urls: {
+    spotify: string;
+  };
+}
+
 export interface AuthSession extends Omit<DefaultSession, "user"> {
   user: AuthUser;
 }
@@ -72,11 +82,22 @@ export interface Playlist {
   };
   items?: [{ added_at: string; track: Track }];
   tracks: {
-    items: [{ added_at: string; track: Track }];
+    href: string;
     total: number;
   };
   type: string;
   total?: number;
+}
+
+export interface PlaylistTrack {
+  added_at: string;
+  added_by: nonAuthUser;
+  is_local: boolean;
+  primary_color?: string;
+  track: Track;
+  video_thumbnail?: {
+    url?: string;
+  };
 }
 
 export interface SearchResults {
