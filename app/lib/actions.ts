@@ -157,6 +157,27 @@ export const getUserLikedPlaylists = async (
   return data.items;
 };
 
+export const getAllUserLikedPlaylists = async (
+  session: AuthSession
+): Promise<Playlist[]> => {
+  const data = await customGet(
+    "https://api.spotify.com/v1/me/playlists?limit=50",
+    session
+  );
+
+  let limit = 50;
+  let currUrl = data.next;
+
+  while (currUrl !== null) {
+    const nextData = await customGet(currUrl, session);
+    data.items.push(...nextData.items);
+    limit += 50;
+    currUrl = nextData.next;
+  }
+
+  return data.items;
+}
+
 export const getPlaylistById = async (
   session: AuthSession,
   playlistId: string
@@ -225,6 +246,18 @@ export const getTrackAnalysis = async (
     session
   );
 };
+
+export const getManyTrackAnalysis = async (
+  session: AuthSession,
+  trackIds: string[]
+): Promise<TrackAnalysis[]> => {
+  const joinedIds = trackIds.join(",");
+  return customGet(
+    `https://api.spotify.com/v1/audio-features?ids=${joinedIds}`,
+    session
+  )
+}
+
 
 export const getTrackRecommendations = async (
   session: AuthSession,
