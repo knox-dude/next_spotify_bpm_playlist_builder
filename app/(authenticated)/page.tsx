@@ -5,7 +5,7 @@ import { Track, Playlist } from "../types/types";
 import Link from "next/link";
 import Image from "next/image";
 import { Album } from "lucide-react";
-import generateBpmSongs from "../lib/generateBpmSongs";
+import GenerateBpmButton from "../components/GenerateBpmButton";
 
 export default async function Home() {
   const session = await getAuthSession();
@@ -24,18 +24,11 @@ export default async function Home() {
     (data) => data.sort((a, b) => a.name.localeCompare(b.name))
   )) as Playlist[];
 
-  // const songsToGetBpmFrom = [];
-  // for (const playlist of userPlaylists) {
-  //   const playlistTracks = playlist.tracks.items.map((item) => item.track);
-  //   songsToGetBpmFrom.push(...playlistTracks);
-  // }
-
-  // const bpmSongs = await generateBpmSongs(100, 120, songsToGetBpmFrom, session);
-  // console.log(bpmSongs);
 
   return (
     <section className="flex flex-col items-start">
       <h1 className="mb-5 text-3xl font-bold">God fucking shit </h1>
+      <GenerateBpmButton session={session}/>
 
       <h1 className="mt-8">Playlists</h1>
       {userPlaylists.map((playlist) => (
