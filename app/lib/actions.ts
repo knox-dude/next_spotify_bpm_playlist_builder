@@ -4,6 +4,7 @@ import {
   AuthSession,
   Category,
   Playlist,
+  PlaylistTrack,
   Track,
   TrackAnalysis,
 } from "@/app/types/types";
@@ -237,6 +238,13 @@ export const getTrackById = async (
   return customGet(`https://api.spotify.com/v1/tracks/${trackId}`, session);
 };
 
+export const getTrackFromPlaylistLink = async (
+  session: AuthSession,
+  playlistLink: string
+): Promise<PlaylistTrack[]> => {
+  return customGet(`${playlistLink}`, session).then((data) => data.items);
+}
+
 export const getTrackAnalysis = async (
   session: AuthSession,
   trackId: string
@@ -255,7 +263,7 @@ export const getManyTrackAnalysis = async (
   return customGet(
     `https://api.spotify.com/v1/audio-features?ids=${joinedIds}`,
     session
-  )
+  ).then((data) => data.audio_features);
 }
 
 
