@@ -23,10 +23,8 @@ export default function RootLayout({
             " h-screen flex flex-col overflow-hidden bg-background text-white items-stretch p-2"
           }
         >
-          <div className="grid grid-cols-10 gap-2">
-            <div className="flex flex-col h-[87vh] col-span-8 overflow-auto rounded-lg bg-paper-700">
-              <main className="mx-8 my-4">{children}</main>
-            </div>
+          <div className="flex flex-col h-[87vh] col-span-8 overflow-auto rounded-lg bg-paper-700">
+            <main className="mx-8 my-4">{children}</main>
           </div>
         </body>
       </NextAuthProvider>
