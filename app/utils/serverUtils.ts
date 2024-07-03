@@ -1,7 +1,7 @@
 "use server";
 
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { AuthSession } from "@/types/types";
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
+import { AuthSession } from "@/app/types/types";
 import { getServerSession } from "next-auth/next";
 
 export const customGet = async (url: string, session: AuthSession | null) => {
