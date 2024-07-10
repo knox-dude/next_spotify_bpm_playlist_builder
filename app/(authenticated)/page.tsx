@@ -5,8 +5,6 @@ import { Track, Playlist } from "../types/types";
 import Link from "next/link";
 import Image from "next/image";
 import { Album } from "lucide-react";
-import GenerateBpmButton from "../components/GenerateBpmButton";
-import BpmOptionsInput from "../components/BpmOptionsInput";
 import BpmSubmitForm from "../components/BpmSubmitForm";
 
 export default async function Home() {
@@ -30,11 +28,6 @@ export default async function Home() {
   return (
     <section className="flex flex-col items-start">
       <h1 className="mb-2 text-4xl font-bold text-center self-center">BPM Playlist Builder</h1>
-      <div className="self-center flex justify-around w-11/12 text-gray-400 mb-5">
-        <p>Choose BPM range </p>
-        <p>Choose desired playlists</p>
-        <p>Generate BPM playlist!</p>
-      </div>
       <BpmSubmitForm session={session}/>
 
       <h1 className="mt-8">Playlists</h1>
