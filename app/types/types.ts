@@ -116,6 +116,7 @@ export interface SearchResults {
 }
 
 export interface TrackAnalysis {
+  id: string;
   acousticness: number;
   danceability: number;
   energy: number;
