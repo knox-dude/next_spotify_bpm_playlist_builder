@@ -8,6 +8,6 @@ A lot of the source code was adapted from [Next Spotify V2](https://github.com/a
 
 
 
-1. Ability to choose which playlists (form with playlist cover and name, checkboxes)
+1. Ability to choose which playlists (form with playlist cover and name, checkboxes) - done
 2. Loading screen during the process
-3. Song component (end result) 
+3. Song component (end result) - put in another tab/ use routing. Better for sharing results in a real world app.
