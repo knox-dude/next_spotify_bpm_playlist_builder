@@ -73,6 +73,9 @@ async function keepSongsInCorrectBpmRange(
   return results;
 }
 
+
+// TODO: implement the top tracks
+// TODO: make set so that no duplicate songs are taken (do it upon getting the songs from the playlists)
 async function generateBpmSongs(
   lowBpm: number,
   highBpm: number,
