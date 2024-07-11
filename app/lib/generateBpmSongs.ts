@@ -1,5 +1,15 @@
-import { AuthSession, Track, TrackAnalysis, Playlist } from "../types/types";
-import { getManyTrackAnalysis, getTrackFromPlaylistLink, getTopItems } from "./actions";
+import {
+  AuthSession,
+  Track,
+  TrackAnalysis,
+  Playlist,
+  TrackWithAnalysis,
+} from "../types/types";
+import {
+  getManyTrackAnalysis,
+  getTrackFromPlaylistLink,
+  getTopItems,
+} from "./actions";
 import { getAllUserLikedPlaylists } from "./actions";
 
 // splits arrays (of tracks) into chunks - spotify can only evaluate 100 tracks per API call
@@ -12,7 +22,6 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
 }
 
 // only keep songs in desired BPM range
-// TODO: include checkbox for half-speed and double-speed
 async function keepSongsInCorrectBpmRange(
   lowBpm: number,
   highBpm: number,
@@ -20,8 +29,9 @@ async function keepSongsInCorrectBpmRange(
   session: AuthSession,
   getDoubled = false,
   getHalved = false
-): Promise<string[]> {
-  const results: TrackAnalysis[] = [];
+): Promise<TrackWithAnalysis[]> {
+  const results: TrackWithAnalysis[] = [];
+
   // extract features
   for (const chunk of chunkedSongs) {
     const features = await getManyTrackAnalysis(
@@ -29,32 +39,38 @@ async function keepSongsInCorrectBpmRange(
       chunk.map((song) => song.id)
     );
 
-    if (getDoubled) {
-      results.push(
-        ...features.filter(
-          (song) =>
-            song.tempo && song.tempo >= lowBpm * 2 && song.tempo <= highBpm * 2
-        )
+    try {
+      // check if the song is in the desired BPM range, accounting for double/half speed
+      const filteredFeatures = features.filter(
+        (song) =>
+          song &&
+          song.tempo !== undefined &&
+            (getDoubled &&
+            song.tempo &&
+            song.tempo >= lowBpm * 2 &&
+            song.tempo <= highBpm * 2) ||
+          (getHalved &&
+            song.tempo &&
+            song.tempo >= lowBpm / 2 &&
+            song.tempo <= highBpm / 2) ||
+          (song.tempo && song.tempo >= lowBpm && song.tempo <= highBpm)
       );
+      // match the analysis with the original track, for later display
+      filteredFeatures.forEach((analysis) => {
+        const track = chunk.find((song) => song.id === analysis.id);
+        if (track) {
+          results.push({
+            ...track,
+            analysis,
+          });
+        }
+      });
+    } catch (e) {
+      console.log(e);
     }
-
-    if (getHalved) {
-      results.push(
-        ...features.filter(
-          (song) =>
-            song.tempo && song.tempo >= lowBpm / 2 && song.tempo <= highBpm / 2
-        )
-      );
-    }
-
-    results.push(
-      ...features.filter(
-        (song) => song.tempo && song.tempo >= lowBpm && song.tempo <= highBpm
-      )
-    );
   }
 
-  return results.map((song) => song.id);
+  return results;
 }
 
 async function generateBpmSongs(
@@ -66,43 +82,51 @@ async function generateBpmSongs(
   useTopMediumTerm: boolean,
   useTopLongTerm: boolean,
   session: AuthSession,
-  playlistIds?: string[]
-): Promise<string[]> {
+  playlists?: Playlist[]
+): Promise<Map<Playlist, TrackWithAnalysis[]>> {
+  // const playlistTracks = [];
+  const playlistTracks = new Map<Playlist, TrackWithAnalysis[]>();
+  const results = [];
 
-  // get all users playlists - REPLACE THIS WITH USERS CHOICE OF PLAYLISTS
-  const userPlaylists = (await getAllUserLikedPlaylists(session).then((data) =>
-    data.sort((a, b) => a.name.localeCompare(b.name))
-  )) as Playlist[];
+  if (!playlists) {
+    if (!useTopShortTerm && !useTopMediumTerm && !useTopLongTerm) {
+      throw new Error("No playlists or top tracks selected");
+    }
+  }
 
-  const songs = [];
-
-  // get all songs from the (TODO: checked) playlists
-  for (const playlist of userPlaylists.slice(3, 6)) {
-    const playlistTracks = await getTrackFromPlaylistLink(
+  // get all songs from the playlists
+  for (const playlist of playlists as Playlist[]) {
+    const tracks = await getTrackFromPlaylistLink(
       session,
       playlist.tracks.href
     );
-    songs.push(...playlistTracks.map((item) => item.track));
+    const chunkedSongs = chunkArray(
+      tracks.map((item) => item.track),
+      100
+    );
+    const filteredTracks = await keepSongsInCorrectBpmRange(
+      lowBpm,
+      highBpm,
+      chunkedSongs,
+      session,
+      useDoubleSpeed,
+      useHalfSpeed
+    );
+    playlistTracks.set(playlist, filteredTracks);
   }
 
   // need to test this in debugger to see if it works.
   if (useTopShortTerm) {
-    const topShortTerm = await getTopItems({session, timeRange:"short_term", type:"tracks", limit: 50});
+    const topShortTerm = await getTopItems({
+      session,
+      timeRange: "short_term",
+      type: "tracks",
+      limit: 50,
+    });
     console.log(topShortTerm);
   }
 
-  // chunk songs into evaluatable amounts
-  const chunkedSongs = chunkArray(songs, 100);
-  const results: string[] = await keepSongsInCorrectBpmRange(
-    lowBpm,
-    highBpm,
-    chunkedSongs,
-    session,
-    useDoubleSpeed,
-    useHalfSpeed
-  );
-
-  return results;
+  return playlistTracks;
 }
 
 export default generateBpmSongs;
