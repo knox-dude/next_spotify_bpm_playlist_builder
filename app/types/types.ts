@@ -129,3 +129,7 @@ export interface TrackAnalysis {
   tempo: number;
   valence: number;
 }
+
+export interface TrackWithAnalysis extends Track {
+  analysis: TrackAnalysis;
+}
