@@ -6,6 +6,7 @@ import TextInput from "./TextInput";
 import Checkbox from "./Checkbox";
 import generateBpmSongs from "../lib/generateBpmSongs";
 import PlaylistList from "./PlaylistList";
+import { useSelectedPlaylists } from "../providers/SelectedPlaylistsProvider";
 
 interface BpmSubmitFormProps {
   session: AuthSession;
@@ -21,6 +22,8 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({ session }) => {
   const [longTerm, setLongTerm] = useState<boolean>(false);
   const [isHovered, setIsHovered] = useState<boolean>(false);
 
+  const { selectedPlaylists, togglePlaylist } = useSelectedPlaylists();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (canSubmit()) {
@@ -32,8 +35,11 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({ session }) => {
         shortTerm,
         mediumTerm,
         longTerm,
-        session
-      );
+        session,
+        selectedPlaylists // Add selected playlists
+      )
+        .then((results) => console.log(results))
+        .catch((err) => console.error(`problem getting bpm songs: ${err}`));
     }
   };
 
@@ -60,7 +66,7 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({ session }) => {
       onSubmit={handleSubmit}
       className="self-center flex flex-col w-11/12 justify-center items-center"
     >
-      <div className="self-center flex justify-around w-11/12 text-gray-400">
+      <div className="self-center flex justify-around w-11/12 text-gray-400 font-bold text-2xl">
         <p>Choose BPM range </p>
       </div>
       <TextInput
@@ -76,7 +82,7 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({ session }) => {
         onChange={(e) => handleBpmInputChange(e)}
       />
       <hr className="h-px w-full my-2 bg-gray-500 border-0 z-10"></hr>
-      <div className="self-center flex justify-around w-11/12 text-gray-400">
+      <div className="self-center flex justify-around w-11/12 text-gray-400 font-bold text-2xl">
         <p>Choose options </p>
       </div>
       <Checkbox
@@ -110,10 +116,10 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({ session }) => {
         onChange={(e) => setLongTerm(e.target.checked)}
       />
       <hr className="h-px w-full my-2 bg-gray-500 border-0 z-10"></hr>
-      <div className="self-center flex justify-around w-11/12 text-gray-400">
+      <div className="self-center flex justify-around w-11/12 text-gray-400 font-bold text-2xl mb-2">
         <p> Choose playlists </p>
       </div>
-      <PlaylistList />
+      <PlaylistList session={session} />
       <div
         className="relative"
         onMouseOver={() => setIsHovered(true)}
@@ -128,7 +134,8 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({ session }) => {
         </button>
         {!canSubmit() && isHovered && (
           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 bg-gray-700 text-white text-center text-sm rounded-md py-1 opacity-90">
-            -both bpm inputs must be numbers<br />
+            -both bpm inputs must be numbers
+            <br />
             -lower bpm must be lower than or equal to higher bpm
           </div>
         )}

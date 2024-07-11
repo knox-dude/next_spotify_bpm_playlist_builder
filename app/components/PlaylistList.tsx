@@ -35,8 +35,7 @@ function PlaylistList({session}:{session:AuthSession}) {
           {playlists.map((playlist) => (
             <PlaylistDisplay
               key={playlist.id}
-              name={playlist.name}
-              imageUrl={playlist.images.length > 0 ? playlist.images[0].url : ""}
+              playlist={playlist}
             />
           ))}
         </div>
