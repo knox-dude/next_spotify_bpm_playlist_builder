@@ -242,6 +242,22 @@ export const getTrackFromPlaylistLink = async (
   session: AuthSession,
   playlistLink: string
 ): Promise<PlaylistTrack[]> => {
+  const data = await customGet(
+    `${playlistLink}?limit=100`,
+    session
+  );
+
+  let limit = 100;
+  let currUrl = data.next;
+
+  while (currUrl !== null) {
+    const nextData = await customGet(currUrl, session);
+    data.items.push(...nextData.items);
+    limit += 100;
+    currUrl = nextData.next;
+  }
+
+  return data.items;
   return customGet(`${playlistLink}`, session).then((data) => data.items);
 }
 
