@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Album } from "lucide-react";
 import BpmSubmitForm from "../components/BpmSubmitForm";
+import BpmFormHolder from "../components/BpmFormHolder";
 
 export default async function Home() {
   const session = await getAuthSession();
@@ -20,33 +21,11 @@ export default async function Home() {
     type: "tracks",
   }).then((data) => data.items)) as Track[];
 
-  const userPlaylists = (await getAllUserLikedPlaylists(session).then(
-    (data) => data.sort((a, b) => a.name.localeCompare(b.name))
-  )) as Playlist[];
-
 
   return (
     <section className="flex flex-col items-start">
       <h1 className="mb-2 text-4xl font-bold text-center self-center">BPM Playlist Builder</h1>
-      <BpmSubmitForm session={session}/>
-
-      <h1 className="mt-8">Playlists</h1>
-      {userPlaylists.map((playlist) => (
-        <div className="flex items-center gap-4" key={playlist.id}>
-          {playlist.images.length > 0 ? (
-            <Image
-              src={playlist.images[0].url}
-              alt={playlist.name}
-              width={72}
-              height={72}
-              className="object-cover h-full rounded-tl-md rounded-bl-md aspect-square"
-            />
-          ) : (
-            <Album size={20} />
-          )}
-          <h3 className="font-semibold truncate">{playlist.name}</h3>
-        </div>
-      ))}
+      <BpmFormHolder session={session}/>
 
       <h1 className="mt-8">Top Tracks</h1>
       <div className="grid w-full grid-cols-12 gap-4">
