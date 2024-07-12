@@ -90,6 +90,12 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
               ))}
             </div>
           ))}
+        <button
+          onClick={() => setCompletedResults(false)}
+          className="bg-paper-500 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
+        >
+          Back to Playlist Builder
+        </button>
         </div>
       )}
     </SelectedPlaylistsProvider>
