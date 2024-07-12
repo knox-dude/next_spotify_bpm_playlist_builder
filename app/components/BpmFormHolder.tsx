@@ -22,9 +22,12 @@ interface BpmFormHolderProps {
 
 function BpmFormHolder({ session }: BpmFormHolderProps) {
   const [loading, setLoading] = useState<boolean>(false);
-  const [results, setResults] = useState<Map<Playlist, TrackWithAnalysis[]>>(new Map<Playlist, TrackWithAnalysis[]>());
+  const [results, setResults] = useState<Map<Playlist, TrackWithAnalysis[]>>(
+    new Map<Playlist, TrackWithAnalysis[]>()
+  );
   const [completedResults, setCompletedResults] = useState<boolean>(false);
-  const [generationParams, setGenerationParams] = useState<HandleBpmGenerationProps | null>(null);
+  const [generationParams, setGenerationParams] =
+    useState<HandleBpmGenerationProps | null>(null);
 
   useEffect(() => {
     if (generationParams) {
@@ -59,7 +62,10 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
   return (
     <SelectedPlaylistsProvider>
       {!loading && !completedResults && (
-        <BpmSubmitForm session={session} handleBpmGeneration={handleBpmGeneration} />
+        <BpmSubmitForm
+          session={session}
+          handleBpmGeneration={handleBpmGeneration}
+        />
       )}
       {loading && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75">
@@ -68,13 +74,20 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
       )}
       {!loading && completedResults && (
         <div>
-          {/* Render the results here */}
-          {results.map((result) => (
-            <div key={result.id}>
-              <h3>{result.name}</h3>
-              <p>Artist: {result.artists.map((artist) => artist.name).join(", ")}</p>
-              <p>Album: {result.album.name}</p>
-              <p>BPM: {result.analysis.tempo}</p>
+          {Array.from(results.entries()).map(([playlist, tracks]) => (
+            <div key={playlist.id}>
+              <h2>{playlist.name}</h2>
+              {tracks.map((track) => (
+                <div key={track.id}>
+                  <h3>{track.name}</h3>
+                  <p>
+                    Artist:{" "}
+                    {track.artists.map((artist) => artist.name).join(", ")}
+                  </p>
+                  <p>Album: {track.album.name}</p>
+                  <p>BPM: {track.analysis.tempo}</p>
+                </div>
+              ))}
             </div>
           ))}
         </div>
