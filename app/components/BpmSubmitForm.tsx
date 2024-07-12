@@ -1,18 +1,39 @@
 "use client";
 
 import React, { useState } from "react";
-import { AuthSession } from "../types/types";
+import { AuthSession, Playlist } from "../types/types";
 import TextInput from "./TextInput";
 import Checkbox from "./Checkbox";
 import generateBpmSongs from "../lib/generateBpmSongs";
-import PlaylistList from "./PlaylistList";
+import PlaylistList from "./PlaylistInputCardList";
 import { useSelectedPlaylists } from "../providers/SelectedPlaylistsProvider";
+
+interface handleBpmGenerationProps {
+  lowBpm: string;
+  highBpm: string;
+  doubleSpeed: boolean;
+  halfSpeed: boolean;
+  shortTerm: boolean;
+  mediumTerm: boolean;
+  longTerm: boolean;
+  selectedPlaylists: Playlist[];
+}
 
 interface BpmSubmitFormProps {
   session: AuthSession;
+  handleBpmGeneration: ({
+    lowBpm,
+    highBpm,
+    doubleSpeed,
+    halfSpeed,
+    shortTerm,
+    mediumTerm,
+    longTerm,
+    selectedPlaylists,
+  }: handleBpmGenerationProps) => void;
 }
 
-const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({ session }) => {
+const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({ session, handleBpmGeneration }) => {
   const [lowBpm, setLowBpm] = useState<string>("");
   const [highBpm, setHighBpm] = useState<string>("");
   const [doubleSpeed, setDoubleSpeed] = useState<boolean>(false);
@@ -22,7 +43,7 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({ session }) => {
   const [longTerm, setLongTerm] = useState<boolean>(false);
   const [isHovered, setIsHovered] = useState<boolean>(false);
 
-  const { selectedPlaylists, togglePlaylist } = useSelectedPlaylists();
+  const { selectedPlaylists } = useSelectedPlaylists();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
