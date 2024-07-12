@@ -15,19 +15,26 @@ export default async function Home() {
     redirect("/login");
   }
 
-  const topTracks = (await getTopItems({
-    session,
-    limit: 9,
-    type: "tracks",
-  }).then((data) => data.items)) as Track[];
-
-
   return (
     <section className="flex flex-col items-start">
       <h1 className="mb-2 text-4xl font-bold text-center self-center">BPM Playlist Builder</h1>
       <BpmFormHolder session={session}/>
+    </section>
+  );
+}
 
-      <h1 className="mt-8">Top Tracks</h1>
+
+/**
+ * Previously was here: Top Tracks ( use this for future displays )
+ * 
+ * const topTracks = (await getTopItems({
+    session,
+    limit: 9,
+    type: "tracks",
+  }).then((data) => data.items)) as Track[];
+ * 
+ * 
+ *    <h1 className="mt-8">Top Tracks</h1>
       <div className="grid w-full grid-cols-12 gap-4">
         {topTracks.map((track) => (
           <Link
@@ -52,6 +59,4 @@ export default async function Home() {
           </Link>
         ))}
       </div>
-    </section>
-  );
-}
+ */
