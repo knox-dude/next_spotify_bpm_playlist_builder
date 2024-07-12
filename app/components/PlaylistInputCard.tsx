@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { useSelectedPlaylists } from "../providers/SelectedPlaylistsProvider";
 import { Playlist } from "../types/types";
+import { MdOutlineCheckCircle } from "react-icons/md";
 
 interface PlaylistDisplayProps {
   playlist: Playlist
@@ -41,6 +42,11 @@ const PlaylistDisplay: React.FC<PlaylistDisplayProps> = ({playlist}:PlaylistDisp
       {isHovered && (
         <div className="absolute bottom-full left-1/2 transform translate-y-4 -translate-x-1/2 mb-2 w-64 bg-gray-700 text-white text-center text-sm rounded-md py-1 opacity-90">
           {playlist.name}
+        </div>
+      )}
+      {selected && (
+        <div className="absolute top-1 right-1 text-green-600">
+          <MdOutlineCheckCircle size={40} />
         </div>
       )}
     </div>
