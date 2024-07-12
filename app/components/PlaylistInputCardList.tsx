@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import PlaylistDisplay from './PlaylistDisplay';
+import PlaylistDisplay from './PlaylistInputCard';
 import { AuthSession, Playlist } from '../types/types';
 import { getAllUserLikedPlaylists } from '../lib/actions';
 import { Audio } from 'react-loader-spinner';
