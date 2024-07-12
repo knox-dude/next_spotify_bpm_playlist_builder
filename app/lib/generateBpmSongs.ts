@@ -44,16 +44,16 @@ async function keepSongsInCorrectBpmRange(
       const filteredFeatures = features.filter(
         (song) =>
           song &&
-          song.tempo !== undefined &&
-            (getDoubled &&
+          song.tempo &&
+          ((getDoubled &&
             song.tempo &&
             song.tempo >= lowBpm * 2 &&
             song.tempo <= highBpm * 2) ||
-          (getHalved &&
-            song.tempo &&
-            song.tempo >= lowBpm / 2 &&
-            song.tempo <= highBpm / 2) ||
-          (song.tempo && song.tempo >= lowBpm && song.tempo <= highBpm)
+            (getHalved &&
+              song.tempo &&
+              song.tempo >= lowBpm / 2 &&
+              song.tempo <= highBpm / 2) ||
+            (song.tempo && song.tempo >= lowBpm && song.tempo <= highBpm))
       );
       // match the analysis with the original track, for later display
       filteredFeatures.forEach((analysis) => {
@@ -66,13 +66,13 @@ async function keepSongsInCorrectBpmRange(
         }
       });
     } catch (e) {
-      console.log(e);
+      // TODO: testing. I think this error is gone. I can't be 100% sure until testing.
+      console.debug(e);
     }
   }
 
   return results;
 }
-
 
 // TODO: implement the top tracks
 // TODO: make set so that no duplicate songs are taken (do it upon getting the songs from the playlists)
