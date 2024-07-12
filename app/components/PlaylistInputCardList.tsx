@@ -1,11 +1,16 @@
-import React, {useState, useEffect} from 'react';
-import PlaylistDisplay from './PlaylistInputCard';
+import React, { useState, useEffect } from 'react';
+import PlaylistInputCard from './PlaylistInputCard';
+import SearchBar from './DebouncedSearchBar';
 import { AuthSession, Playlist } from '../types/types';
 import { getAllUserLikedPlaylists } from '../lib/actions';
 import { Audio } from 'react-loader-spinner';
+import { useSelectedPlaylists } from '../providers/SelectedPlaylistsProvider';
 
-
-function PlaylistList({session}:{session:AuthSession}) {
+function PlaylistInputCardList({ session }: { session: AuthSession }) {
+  const [searchResults, setSearchResults] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const { selectedPlaylists, togglePlaylist } = useSelectedPlaylists();
 
   useEffect(() => {
     async function getUserPlaylists() {
@@ -16,10 +21,17 @@ function PlaylistList({session}:{session:AuthSession}) {
       setLoading(false);
     }
     getUserPlaylists();
-  }, [session])
+  }, [session]);
 
-  const [loading, setLoading] = useState(true);
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const renderPlaylists = (searchResults: string) => {
+    if (!searchResults) {
+      return playlists;
+    }
+    const searchResultsLower = searchResults.toLowerCase();
+    return playlists.filter((playlist) =>
+      playlist.name.toLowerCase().includes(searchResultsLower)
+    );
+  };
 
   return (
     <>
@@ -28,20 +40,26 @@ function PlaylistList({session}:{session:AuthSession}) {
           <Audio color="#1DB954" height={80} width={80} />
           <p className='font-bold text-2xl text-gray-400'>Loading your playlists...</p>
         </div>
-      
       )}
       {!loading && (
-        <div className="grid grid-cols-[repeat(auto-fit,_minmax(7.5rem,_1fr))] gap-4 w-full">
-          {playlists.map((playlist) => (
-            <PlaylistDisplay
-              key={playlist.id}
-              playlist={playlist}
-            />
-          ))}
-        </div>
+        <>
+          <div>
+            <SearchBar searchValue={searchResults} setSearchValue={setSearchResults} />
+          </div>
+          <div className="grid grid-cols-[repeat(auto-fit,_minmax(7.5rem,_1fr))] gap-4 w-full">
+            {renderPlaylists(searchResults).map((playlist) => (
+              <PlaylistInputCard
+                key={playlist.id}
+                playlist={playlist}
+                selected={selectedPlaylists.some((p) => p.id === playlist.id)}
+                togglePlaylist={togglePlaylist}
+              />
+            ))}
+          </div>
+        </>
       )}
-      </>
+    </>
   );
 };
 
-export default PlaylistList;
+export default PlaylistInputCardList;
