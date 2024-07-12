@@ -33,7 +33,10 @@ interface BpmSubmitFormProps {
   }: handleBpmGenerationProps) => void;
 }
 
-const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({ session, handleBpmGeneration }) => {
+const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({
+  session,
+  handleBpmGeneration,
+}) => {
   const [lowBpm, setLowBpm] = useState<string>("");
   const [highBpm, setHighBpm] = useState<string>("");
   const [doubleSpeed, setDoubleSpeed] = useState<boolean>(false);
@@ -48,19 +51,16 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({ session, handleBpmGenerat
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (canSubmit()) {
-      generateBpmSongs(
-        parseInt(lowBpm),
-        parseInt(highBpm),
+      handleBpmGeneration({
+        lowBpm,
+        highBpm,
         doubleSpeed,
         halfSpeed,
         shortTerm,
         mediumTerm,
         longTerm,
-        session,
-        selectedPlaylists // Add selected playlists
-      )
-        .then((results) => console.log(results))
-        .catch((err) => console.error(`problem getting bpm songs: ${err}`));
+        selectedPlaylists,
+      });
     }
   };
 
