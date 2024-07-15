@@ -45,8 +45,8 @@ function PlaylistInputCardList({ session }: { session: AuthSession }) {
         <>
           <div className=' flex justify-center gap-4 mb-4'>
             <SearchBar placeholder='Search for playlist' searchValue={searchResults} setSearchValue={setSearchResults} />
-            <button onClick={() => selectAllPlaylists(playlists)} className="bg-paper-500 text-white rounded-md p-2 enabled:hover:bg-paper-600">Select All</button>
-            <button onClick={() => clearAllPlaylists()} className="bg-paper-500 text-white rounded-md p-2 enabled:hover:bg-paper-600">Select None</button>
+            <button type="button" onClick={() => selectAllPlaylists(playlists)} className="bg-paper-500 text-white rounded-md p-2 enabled:hover:bg-paper-600">Select All</button>
+            <button type="button" onClick={() => clearAllPlaylists()} className="bg-paper-500 text-white rounded-md p-2 enabled:hover:bg-paper-600">Select None</button>
           </div>
           <div className="flex flex-col justify-center w-full">
             <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-4 w-full">

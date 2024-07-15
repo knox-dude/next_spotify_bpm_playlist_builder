@@ -33,7 +33,7 @@ function ResultPlaylist({ playlist, tracks }: ResultPlaylistProps) {
             <Link
               href={`/tracks/${track.id}`}
               key={track.id}
-              className="flex items-center justify-between mb-2 pr-4 truncate rounded-md group/item bg-paper-600 hover:bg-paper-400"
+              className="flex items-center justify-between mb-2 pr-4 truncate rounded-md group/item bg-paper-600 hover:bg-paper-500"
             >
               <div className="flex items-center gap-4 w-full">
                 {track.album.images.length > 0 ? (
@@ -48,6 +48,7 @@ function ResultPlaylist({ playlist, tracks }: ResultPlaylistProps) {
                   <Album size={20} />
                 )}
                 <h3 className="font-semibold truncate w-full">{track.name}</h3>
+                <h3 className="font-semibold truncate w-full">BPM: {track.analysis.tempo}</h3>
               </div>
             </Link>
           ))}
