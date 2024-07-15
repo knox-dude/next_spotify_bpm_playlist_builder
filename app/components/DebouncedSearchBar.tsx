@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
 interface SearchBarProps {
+  placeholder: string;
   searchValue: string;
   setSearchValue: (value: string) => void;
 }
 
-const DebouncedSearchBar: React.FC<SearchBarProps> = ({ searchValue, setSearchValue }) => {
+const DebouncedSearchBar: React.FC<SearchBarProps> = ({ placeholder, searchValue, setSearchValue }) => {
   const [inputValue, setInputValue] = useState(searchValue);
 
   useEffect(() => {
@@ -27,7 +28,8 @@ const DebouncedSearchBar: React.FC<SearchBarProps> = ({ searchValue, setSearchVa
       type="text"
       value={inputValue}
       onChange={handleChange}
-      className="border border-gray-300 text-gray-600 rounded"
+      placeholder={placeholder}
+      className="pl-2 border border-gray-300 text-gray-600 rounded"
     />
   );
 };
