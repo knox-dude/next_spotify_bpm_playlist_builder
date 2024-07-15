@@ -5,6 +5,7 @@ import BpmSubmitForm from "./BpmSubmitForm";
 import { AuthSession, Playlist, TrackWithAnalysis } from "../types/types";
 import generateBpmSongs from "../lib/generateBpmSongs";
 import { Audio } from "react-loader-spinner";
+import ResultPlaylist from "./ResultPlaylist";
 
 interface HandleBpmGenerationProps {
   lowBpm: string;
@@ -31,7 +32,7 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
     useState<HandleBpmGenerationProps | null>(null);
 
   useEffect(() => {
-    if (generationParams) {
+    if (generationParams && !completedResults) {
       setLoading(true);
       generateBpmSongs(
         parseInt(generationParams.lowBpm),
@@ -54,7 +55,7 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
           setLoading(false);
         });
     }
-  }, [generationParams, session]);
+  }, [generationParams, completedResults, session]);
 
   const handleBpmGeneration = (params: HandleBpmGenerationProps) => {
     setGenerationParams(params);
@@ -77,28 +78,24 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
         </div>
       )}
       {!loading && completedResults && (
-        <div>
-          <button
-            onClick={() => setCompletedResults(false)}
-            className="bg-paper-500 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
-          >
-            Back to Playlist Builder
-          </button>
+        <div className="w-11/12 self-center">
+          <div className="flex gap-4 justify-center m-2 w-100vw">
+            <button
+              onClick={() => setCompletedResults(false)}
+              className="bg-paper-500 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
+            >
+              Back to Playlist Builder
+            </button>
+            <button
+              onClick={() => setCompletedResults(false)}
+              className="bg-paper-500 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
+            >
+              Save Songs to Playlist
+            </button>
+          </div>
+
           {Array.from(results.entries()).map(([playlist, tracks]) => (
-            <div key={playlist.id}>
-              <h2>{playlist.name}</h2>
-              {tracks.map((track) => (
-                <div key={track.id}>
-                  <h3>{track.name}</h3>
-                  <p>
-                    Artist:{" "}
-                    {track.artists.map((artist) => artist.name).join(", ")}
-                  </p>
-                  <p>Album: {track.album.name}</p>
-                  <p>BPM: {track.analysis.tempo}</p>
-                </div>
-              ))}
-            </div>
+            <ResultPlaylist playlist={playlist} tracks={tracks} key={playlist.id} />
           ))}
         </div>
       )}
@@ -107,3 +104,21 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
 }
 
 export default BpmFormHolder;
+
+
+// {Array.from(results.entries()).map(([playlist, tracks]) => (
+//   <div key={playlist.id}>
+//     <h2>{playlist.name}</h2>
+//     {tracks.map((track) => (
+//       <div key={track.id}>
+//         <h3>{track.name}</h3>
+//         <p>
+//           Artist:{" "}
+//           {track.artists.map((artist) => artist.name).join(", ")}
+//         </p>
+//         <p>Album: {track.album.name}</p>
+//         <p>BPM: {track.analysis.tempo}</p>
+//       </div>
+//     ))}
+//   </div>
+// ))}
