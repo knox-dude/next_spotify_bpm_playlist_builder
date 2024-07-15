@@ -81,7 +81,10 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
         <div className="w-11/12 self-center">
           <div className="flex gap-4 justify-center m-2 w-100vw">
             <button
-              onClick={() => setCompletedResults(false)}
+              onClick={() => {
+                setGenerationParams(null);
+                setCompletedResults(false)}
+              }
               className="bg-paper-500 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
             >
               Back to Playlist Builder
