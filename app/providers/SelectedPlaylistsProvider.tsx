@@ -4,6 +4,8 @@ import { Playlist } from '../types/types';
 interface SelectedPlaylistsContextProps {
   selectedPlaylists: Playlist[];
   togglePlaylist: (playlist: Playlist) => void;
+  selectAllPlaylists: (playlists: Playlist[]) => void;
+  clearAllPlaylists: () => void;
 }
 
 const SelectedPlaylistsContext = createContext<SelectedPlaylistsContextProps | undefined>(undefined);
@@ -19,8 +21,16 @@ export const SelectedPlaylistsProvider: React.FC<{ children: ReactNode }> = ({ c
     );
   };
 
+  const selectAllPlaylists = (playlists: Playlist[]) => {
+    setSelectedPlaylists(playlists);
+  }
+
+  const clearAllPlaylists = () => {
+    setSelectedPlaylists([]);
+  }
+
   return (
-    <SelectedPlaylistsContext.Provider value={{ selectedPlaylists, togglePlaylist }}>
+    <SelectedPlaylistsContext.Provider value={{ selectedPlaylists, togglePlaylist, selectAllPlaylists, clearAllPlaylists }}>
       {children}
     </SelectedPlaylistsContext.Provider>
   );
