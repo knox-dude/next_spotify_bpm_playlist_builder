@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import Image from "next/image";
-import { Playlist } from "../types/types";
-import { MdOutlineCheckCircle } from "react-icons/md";
+import React, { useState } from 'react';
+import Image from 'next/image';
+import { Playlist } from '../types/types';
+import { MdOutlineCheckCircle } from 'react-icons/md';
 
 interface PlaylistInputCardProps {
   playlist: Playlist;
@@ -9,11 +9,7 @@ interface PlaylistInputCardProps {
   togglePlaylist: (playlist: Playlist) => void;
 }
 
-const PlaylistInputCard: React.FC<PlaylistInputCardProps> = ({
-  playlist,
-  selected,
-  togglePlaylist,
-}) => {
+const PlaylistInputCard: React.FC<PlaylistInputCardProps> = ({ playlist, selected, togglePlaylist }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = () => {
@@ -23,14 +19,14 @@ const PlaylistInputCard: React.FC<PlaylistInputCardProps> = ({
   return (
     <div
       className={`relative flex flex-col items-center justify-between w-30 h-30 bg-gray-200 rounded-md cursor-pointer transition-colors duration-300 p-2 ${
-        selected ? "bg-gray-400" : "bg-gray-200"
+        selected ? 'bg-gray-400' : 'bg-gray-200'
       }`}
       onClick={handleClick}
       onMouseOver={() => setIsHovered(true)}
       onMouseOut={() => setIsHovered(false)}
     >
       <Image
-        src={playlist.images.length > 0 ? playlist.images[0].url : ""}
+        src={playlist.images.length > 0 ? playlist.images[0].url : ''}
         alt={playlist.name}
         className="w-full h-28 object-cover rounded-md transition-opacity duration-300"
         width={120}
