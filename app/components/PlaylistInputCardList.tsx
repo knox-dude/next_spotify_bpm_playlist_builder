@@ -10,7 +10,7 @@ function PlaylistInputCardList({ session }: { session: AuthSession }) {
   const [searchResults, setSearchResults] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
-  const { selectedPlaylists, togglePlaylist } = useSelectedPlaylists();
+  const { selectedPlaylists, togglePlaylist, selectAllPlaylists, clearAllPlaylists } = useSelectedPlaylists();
 
   useEffect(() => {
     async function getUserPlaylists() {
@@ -43,23 +43,32 @@ function PlaylistInputCardList({ session }: { session: AuthSession }) {
       )}
       {!loading && (
         <>
-          <div>
-            <SearchBar searchValue={searchResults} setSearchValue={setSearchResults} />
+          <div className=' flex justify-center gap-4 mb-4'>
+            <SearchBar placeholder='Search for playlist' searchValue={searchResults} setSearchValue={setSearchResults} />
+            <button onClick={() => selectAllPlaylists(playlists)} className="bg-paper-500 text-white rounded-md p-2 enabled:hover:bg-paper-600">Select All</button>
+            <button onClick={() => clearAllPlaylists()} className="bg-paper-500 text-white rounded-md p-2 enabled:hover:bg-paper-600">Select None</button>
           </div>
-          <div className="grid grid-cols-[repeat(auto-fit,_minmax(7.5rem,_1fr))] gap-4 w-full">
-            {renderPlaylists(searchResults).map((playlist) => (
-              <PlaylistInputCard
-                key={playlist.id}
-                playlist={playlist}
-                selected={selectedPlaylists.some((p) => p.id === playlist.id)}
-                togglePlaylist={togglePlaylist}
-              />
-            ))}
+          <div className="flex flex-col justify-center w-full">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-4 w-full">
+              {renderPlaylists(searchResults).map((playlist) => (
+                <PlaylistInputCard
+                  key={playlist.id}
+                  playlist={playlist}
+                  selected={selectedPlaylists.some((p) => p.id === playlist.id)}
+                  togglePlaylist={togglePlaylist}
+                />
+              ))}
+            </div>
+            {renderPlaylists(searchResults).length === 0 && (
+                <div className="flex flex-col justify-center items-center w-full h-full">
+                  <p className="font-bold text-2xl text-gray-400">No playlists found</p>
+                </div>
+            )}
           </div>
         </>
       )}
     </>
   );
-};
+}
 
 export default PlaylistInputCardList;
