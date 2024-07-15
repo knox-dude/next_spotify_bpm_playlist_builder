@@ -4,6 +4,7 @@ import { SelectedPlaylistsProvider } from "../providers/SelectedPlaylistsProvide
 import BpmSubmitForm from "./BpmSubmitForm";
 import { AuthSession, Playlist, TrackWithAnalysis } from "../types/types";
 import generateBpmSongs from "../lib/generateBpmSongs";
+import { Audio } from "react-loader-spinner";
 
 interface HandleBpmGenerationProps {
   lowBpm: string;
@@ -68,12 +69,21 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
         />
       )}
       {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75">
-          <div className="loader">Loading...</div>
+        <div className="fixed inset-0 flex flex-col items-center justify-center bg-gray-800 bg-opacity-75">
+          <Audio color="#1DB954" height={80} width={80} />
+          <p className="font-bold text-2xl text-gray-400">
+            Please sit back and relax, this could take a while...
+          </p>
         </div>
       )}
       {!loading && completedResults && (
         <div>
+          <button
+            onClick={() => setCompletedResults(false)}
+            className="bg-paper-500 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
+          >
+            Back to Playlist Builder
+          </button>
           {Array.from(results.entries()).map(([playlist, tracks]) => (
             <div key={playlist.id}>
               <h2>{playlist.name}</h2>
@@ -90,12 +100,6 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
               ))}
             </div>
           ))}
-        <button
-          onClick={() => setCompletedResults(false)}
-          className="bg-paper-500 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
-        >
-          Back to Playlist Builder
-        </button>
         </div>
       )}
     </SelectedPlaylistsProvider>
