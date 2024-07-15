@@ -79,6 +79,11 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({
     if (isNaN(lowParsed) || isNaN(highParsed)) {
       return false;
     }
+    if (!shortTerm && !mediumTerm && !longTerm) {
+      if (selectedPlaylists.length === 0) {
+        return false;
+      }
+    }
     return lowParsed > 0 && highParsed > 0 && lowParsed <= highParsed;
   };
 
@@ -140,7 +145,6 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({
       <div className="self-center flex justify-around w-11/12 text-gray-400 font-bold text-2xl mb-2">
         <p> Choose playlists </p>
       </div>
-      <PlaylistList session={session} />
       <div
         className="relative"
         onMouseOver={() => setIsHovered(true)}
@@ -158,9 +162,12 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({
             -both bpm inputs must be numbers
             <br />
             -lower bpm must be lower than or equal to higher bpm
+            <br />
+            -select one playlist or top songs
           </div>
         )}
       </div>
+      <PlaylistList session={session} />
     </form>
   );
 };
