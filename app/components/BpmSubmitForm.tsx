@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { AuthSession, Playlist } from "../types/types";
 import TextInput from "./TextInput";
 import Checkbox from "./Checkbox";
-import generateBpmSongs from "../lib/generateBpmSongs";
 import PlaylistList from "./PlaylistInputCardList";
 import { useSelectedPlaylists } from "../providers/SelectedPlaylistsProvider";
 
