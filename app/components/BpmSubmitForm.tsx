@@ -94,18 +94,20 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({
       <div className="self-center flex justify-around w-11/12 text-gray-400 font-bold text-2xl">
         <p>Choose BPM range </p>
       </div>
+      <div className='items-center'>
       <TextInput
         label="lowBpm"
         value={lowBpm}
         placeholder=" Enter lower BPM"
         onChange={(e) => handleBpmInputChange(e)}
       />
-      <TextInput
+            <TextInput
         label="highBpm"
         value={highBpm}
         placeholder=" Enter higher BPM"
         onChange={(e) => handleBpmInputChange(e)}
       />
+      </div>
       <hr className="h-px w-full my-2 bg-gray-500 border-0 z-10"></hr>
       <div className="self-center flex justify-around w-11/12 text-gray-400 font-bold text-2xl">
         <p>Choose options </p>
