@@ -1,3 +1,5 @@
+// Disclaimer: Code taken from Next-Spotify-V2 (https://github.com/ankitk26/Next-Spotify-v2)
+
 "use client";
 
 import { Album, Artist, Playlist } from "@/app/types/types";

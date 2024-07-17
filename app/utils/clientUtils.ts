@@ -1,3 +1,5 @@
+// Disclaimer: Code taken from Next-Spotify-V2 (https://github.com/ankitk26/Next-Spotify-v2)
+
 export const fmtMSS = (seconds: number) => {
   return new Date(seconds).toISOString().substring(15, 15 + 4);
 };
