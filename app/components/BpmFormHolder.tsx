@@ -6,6 +6,8 @@ import { AuthSession, Playlist, TrackWithAnalysis } from "../types/types";
 import generateBpmSongs from "../lib/generateBpmSongs";
 import { Audio } from "react-loader-spinner";
 import ResultPlaylist from "./ResultPlaylist";
+import { SelectedSongsProvider } from "../providers/SelectedSongsProvider";
+import SaveSongsButton from "./SaveSongsButton";
 
 interface HandleBpmGenerationProps {
   lowBpm: string;
@@ -57,12 +59,17 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
     }
   }, [generationParams, completedResults, session]);
 
+  const saveSongsToPlaylist = (songs:TrackWithAnalysis[]) => {
+    console.log(songs);
+  }
+
   const handleBpmGeneration = (params: HandleBpmGenerationProps) => {
     setGenerationParams(params);
   };
 
   return (
     <SelectedPlaylistsProvider>
+      
       {!loading && !completedResults && (
         <BpmSubmitForm
           session={session}
@@ -77,10 +84,12 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
           </p>
         </div>
       )}
+      <SelectedSongsProvider>
       {!loading && completedResults && (
         <div className="w-11/12 self-center">
           <div className="flex gap-4 justify-center m-2 w-100vw">
             <button
+            type="button"
               onClick={() => {
                 setGenerationParams(null);
                 setCompletedResults(false)}
@@ -89,19 +98,17 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
             >
               Back to Playlist Builder
             </button>
-            <button
-              onClick={() => setCompletedResults(false)}
-              className="bg-paper-500 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
-            >
-              Save Songs to Playlist
-            </button>
+            <SaveSongsButton onClick={saveSongsToPlaylist} />
           </div>
-
+          
           {Array.from(results.entries()).map(([playlist, tracks]) => (
-            <ResultPlaylist playlist={playlist} tracks={tracks} key={playlist.id} />
+            (tracks.length > 0 &&
+              <ResultPlaylist playlist={playlist} tracks={tracks} key={playlist.id} />
+            )
           ))}
         </div>
       )}
+      </SelectedSongsProvider>
     </SelectedPlaylistsProvider>
   );
 }
