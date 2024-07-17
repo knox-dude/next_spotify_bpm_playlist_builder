@@ -1,10 +1,13 @@
 import { Playlist, TrackWithAnalysis } from "../types/types";
-import { useState } from "react";
-import Link from "next/link";
+import { MouseEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import { Album } from "lucide-react";
 import { MdExpandLess } from "react-icons/md";
 import { MdExpandMore } from "react-icons/md";
+import { FaCheckSquare } from "react-icons/fa";
+import { FaSquare } from "react-icons/fa";
+import { useSelectedSongs } from "../providers/SelectedSongsProvider";
+import ResultSong from "./ResultSong";
 
 interface ResultPlaylistProps {
   playlist: Playlist;
@@ -13,10 +16,25 @@ interface ResultPlaylistProps {
 
 function ResultPlaylist({ playlist, tracks }: ResultPlaylistProps) {
   const [expanded, setExpanded] = useState<boolean>(false);
+  const [checked, setChecked] = useState<boolean>(false);
+  const { selectedSongs, toggleSong, selectSongs, clearSongs } = useSelectedSongs();
+
+  useEffect(() => {
+    setChecked(tracks.every((track) => selectedSongs.some((selectedTrack) => selectedTrack.id === track.id)))
+  }, [selectedSongs, tracks]);
+
+  function selectPlaylist(e: MouseEvent<SVGElement, globalThis.MouseEvent>) {
+    e.stopPropagation();
+    checked ? clearSongs(tracks) : selectSongs(tracks)
+  }
 
   return (
     <div className="flex flex-col w-full mb-4">
-      <div className="flex w-full cursor-pointer bg-paper-500 p-2 rounded-md justify-between" onClick={() => setExpanded((prev) => !prev)}>
+      <div
+        className="flex w-full cursor-pointer bg-paper-500 p-2 rounded-md justify-between"
+        onClick={() => setExpanded((prev) => !prev)}
+      >
+        <div className="flex justify-start gap-2 items-center">
         <Image
           src={playlist.images[0].url}
           alt={playlist.name}
@@ -25,32 +43,37 @@ function ResultPlaylist({ playlist, tracks }: ResultPlaylistProps) {
           className="object-cover h-full rounded-tl-md rounded-bl-md aspect-square"
         />
         <h2 className="font-bold text-lg self-center">{playlist.name}</h2>
-        {expanded ? <MdExpandLess className='self-center' style={{width:50, height:50}}/> : <MdExpandMore className='self-center' style={{width:50, height:50}}/>}
+        </div>
+        <div className="flex justify-end items-center">
+        {checked ? (
+          <FaCheckSquare style={{ width: 30, height: 30 }} onClick={(e) => selectPlaylist(e)}/>
+        ) : (
+          <FaSquare style={{ width: 30, height: 30 }} onClick={(e) => selectPlaylist(e)} />
+        )}
+        {expanded ? (
+          <MdExpandLess
+            className="self-center"
+            style={{ width: 50, height: 50 }}
+          />
+        ) : (
+          <MdExpandMore
+            className="self-center"
+            style={{ width: 50, height: 50 }}
+          />
+        )}
+        </div>
+
+
       </div>
       {expanded && (
         <div className="mt-2">
           {tracks.map((track) => (
-            <Link
-              href={`/tracks/${track.id}`}
+            <div
               key={track.id}
               className="flex items-center justify-between mb-2 pr-4 truncate rounded-md group/item bg-paper-600 hover:bg-paper-500"
             >
-              <div className="flex items-center gap-4 w-full">
-                {track.album.images.length > 0 ? (
-                  <Image
-                    src={track.album.images[0].url}
-                    alt={track.name}
-                    width={72}
-                    height={72}
-                    className="object-cover h-full rounded-tl-md rounded-bl-md aspect-square"
-                  />
-                ) : (
-                  <Album size={20} />
-                )}
-                <h3 className="font-semibold truncate w-full">{track.name}</h3>
-                <h3 className="font-semibold truncate w-full">BPM: {track.analysis.tempo}</h3>
-              </div>
-            </Link>
+              <ResultSong track={track} />
+            </div>
           ))}
         </div>
       )}
