@@ -1,13 +1,15 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { SelectedPlaylistsProvider } from "../providers/SelectedPlaylistsProvider";
 import BpmSubmitForm from "./BpmSubmitForm";
 import { AuthSession, Playlist, TrackWithAnalysis } from "../types/types";
-import generateBpmSongs from "../lib/generateBpmSongs";
 import { Audio } from "react-loader-spinner";
 import ResultPlaylist from "./ResultPlaylist";
 import { SelectedSongsProvider } from "../providers/SelectedSongsProvider";
 import SaveSongsButton from "./SaveSongsButton";
+import TextInput from "./TextInput";
+import useCreatePlaylist from "../hooks/useCreatePlaylist";
+import useGenerateBpmSongs from "../hooks/useGenerateBpmSongs";
 
 interface HandleBpmGenerationProps {
   lowBpm: string;
@@ -25,58 +27,36 @@ interface BpmFormHolderProps {
 }
 
 function BpmFormHolder({ session }: BpmFormHolderProps) {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [results, setResults] = useState<Map<Playlist, TrackWithAnalysis[]>>(
-    new Map<Playlist, TrackWithAnalysis[]>()
-  );
-  const [completedResults, setCompletedResults] = useState<boolean>(false);
-  const [generationParams, setGenerationParams] =
-    useState<HandleBpmGenerationProps | null>(null);
+  const [newPlaylistName, setNewPlaylistName] = useState<string>("");
 
-  useEffect(() => {
-    if (generationParams && !completedResults) {
-      setLoading(true);
-      generateBpmSongs(
-        parseInt(generationParams.lowBpm),
-        parseInt(generationParams.highBpm),
-        generationParams.doubleSpeed,
-        generationParams.halfSpeed,
-        generationParams.shortTerm,
-        generationParams.mediumTerm,
-        generationParams.longTerm,
-        session,
-        generationParams.selectedPlaylists // Add selected playlists
-      )
-        .then((results) => {
-          setResults(results);
-          setCompletedResults(true);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error(`problem getting bpm songs: ${err}`);
-          setLoading(false);
-        });
-    }
-  }, [generationParams, completedResults, session]);
-
-  const saveSongsToPlaylist = (songs:TrackWithAnalysis[]) => {
-    console.log(songs);
-  }
+  const { createPlaylistAndAddTracks, loading: createLoading, error: createError } = useCreatePlaylist(session);
+  const { generateSongs, loading: generateLoading, results, completed, error: generateError, setCompleted } = useGenerateBpmSongs(session);
 
   const handleBpmGeneration = (params: HandleBpmGenerationProps) => {
-    setGenerationParams(params);
+    generateSongs(params);
   };
+
+  const saveSongsToPlaylist = async (songs:TrackWithAnalysis[]) => {
+    try {
+      const result = await createPlaylistAndAddTracks(newPlaylistName, songs);
+      console.log('Playlist created:', result);
+      // Handle post-creation logic, e.g., reset state, show a success message, etc.
+    } catch (error) {
+      console.error('Error creating playlist:', error);
+    }
+  };
+  
 
   return (
     <SelectedPlaylistsProvider>
       
-      {!loading && !completedResults && (
+      {!generateLoading && !completed && (
         <BpmSubmitForm
           session={session}
           handleBpmGeneration={handleBpmGeneration}
         />
       )}
-      {loading && (
+      {generateLoading && (
         <div className="fixed inset-0 flex flex-col items-center justify-center bg-gray-800 bg-opacity-75">
           <Audio color="#1DB954" height={80} width={80} />
           <p className="font-bold text-2xl text-gray-400">
@@ -85,19 +65,19 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
         </div>
       )}
       <SelectedSongsProvider>
-      {!loading && completedResults && (
+      {!generateLoading && completed && (
         <div className="w-11/12 self-center">
-          <div className="flex gap-4 justify-center m-2 w-100vw">
+          <div className="flex flex-col gap-4 justify-center m-2 w-100vw">
             <button
             type="button"
               onClick={() => {
-                setGenerationParams(null);
-                setCompletedResults(false)}
+                setCompleted(false)}
               }
-              className="bg-paper-500 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
+              className="w-1/2 self-center bg-paper-500 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
             >
               Back to Playlist Builder
             </button>
+            <TextInput className={"self-center w-1/2"} label="playlist-name" value={newPlaylistName} placeholder={"playlist name"} onChange={(e)=> setNewPlaylistName(e.target.value)}/>
             <SaveSongsButton onClick={saveSongsToPlaylist} />
           </div>
           
