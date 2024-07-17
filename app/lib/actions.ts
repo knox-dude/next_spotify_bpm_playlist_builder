@@ -12,6 +12,62 @@ import {
 } from "@/app/types/types";
 import { customGet } from "@/app/utils/serverUtils";
 
+export const createPlaylist = async (
+  session:AuthSession,
+  name:string
+): Promise<any> => {
+
+  if (!session) {
+    return null;
+  }
+  const res = await fetch(`https://api.spotify.com/v1/users/${session.user.name}/playlists`, {
+    headers: {
+      Authorization: `Bearer ${session.user.accessToken}`,
+    },
+    method: "POST",
+    body: JSON.stringify({name})
+  }).then((res) => res.json());
+  return res;
+}
+
+export const addSongsToPlaylist = async (
+  session: AuthSession,
+  playlistId:string,
+  tracks:string[]
+): Promise<any> => {
+  if (!session) {
+    return null;
+  }
+  const results = [];
+  while (tracks.length > 100) {
+    let hundredTracks = tracks.slice(0, 100);
+    let processedTracks = (hundredTracks.map((trackId) => (`spotify:track:${trackId}`))).join();
+    const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+      headers: {
+        Authorization: `Bearer ${session.user.accessToken}`,
+      },
+      method: "POST",
+      body: JSON.stringify({
+        uris: processedTracks
+      })
+    })
+    results.push(res);
+    tracks = tracks.slice(100);
+  }
+  let processedTracks = (tracks.map((trackId) => (`spotify:track:${trackId}`))).join();
+  const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+    headers: {
+      Authorization: `Bearer ${session.user.accessToken}`,
+    },
+    method: "POST",
+    body: JSON.stringify({
+      uris: processedTracks
+    })
+  })
+  results.push(res);
+  return results;
+}
+
 export const getNewReleases = async (
   session: AuthSession
 ): Promise<Album[]> => {
