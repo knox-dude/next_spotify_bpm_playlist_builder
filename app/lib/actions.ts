@@ -20,7 +20,7 @@ export const createPlaylist = async (
   if (!session) {
     return null;
   }
-  const res = await fetch(`https://api.spotify.com/v1/users/${session.user.name}/playlists`, {
+  const res = await fetch(`https://api.spotify.com/v1/users/${session.user.sub}/playlists`, {
     headers: {
       Authorization: `Bearer ${session.user.accessToken}`,
     },
