@@ -15,7 +15,7 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({ canSubmit }) => {
     >
       <button
         type="submit"
-        className="bg-paper-500 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
+        className="bg-paper-500 mt-4 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
         disabled={!canSubmit()}
       >
         Generate BPM
