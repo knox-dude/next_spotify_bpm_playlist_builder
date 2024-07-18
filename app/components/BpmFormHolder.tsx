@@ -29,6 +29,7 @@ interface BpmFormHolderProps {
 function BpmFormHolder({ session }: BpmFormHolderProps) {
   const [newPlaylistName, setNewPlaylistName] = useState<string>("");
 
+
   const { createPlaylistAndAddTracks, loading: createLoading, error: createError } = useCreatePlaylist(session);
   const { generateSongs, loading: generateLoading, results, completed, error: generateError, setCompleted } = useGenerateBpmSongs(session);
 
@@ -38,11 +39,14 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
 
   const saveSongsToPlaylist = async (songs:TrackWithAnalysis[]) => {
     try {
-      const result = await createPlaylistAndAddTracks(newPlaylistName, songs);
-      console.log('Playlist created:', result);
+      const newPlaylistId = await createPlaylistAndAddTracks(newPlaylistName, songs);
+      console.log('Playlist created:', newPlaylistId);
+      alert('Playlist created! Taking you now...')
+      window.open(`https://open.spotify.com/playlist/${newPlaylistId}`, '_blank');
       // Handle post-creation logic, e.g., reset state, show a success message, etc.
     } catch (error) {
       console.error('Error creating playlist:', error);
+      alert(`Error creating playlist: ${error}`);
     }
   };
   
