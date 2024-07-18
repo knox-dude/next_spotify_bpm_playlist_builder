@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { Playlist } from '../types/types';
 import { MdOutlineCheckCircle } from 'react-icons/md';
+import { Album } from 'lucide-react';
 
 interface PlaylistInputCardProps {
   playlist: Playlist;
@@ -25,13 +26,19 @@ const PlaylistInputCard: React.FC<PlaylistInputCardProps> = ({ playlist, selecte
       onMouseOver={() => setIsHovered(true)}
       onMouseOut={() => setIsHovered(false)}
     >
-      <Image
+      {playlist.images && playlist.images.length > 0 ? (
+        <Image
         src={playlist.images.length > 0 ? playlist.images[0].url : ''}
         alt={playlist.name}
         className="w-full h-28 object-cover rounded-md transition-opacity duration-300"
         width={120}
         height={120}
-      />
+    />
+      ) : (
+        <Album size={20} />
+      )
+      }
+
       <p className="mt-2 text-base text-paper-400 font-bold truncate w-full text-center">
         {playlist.name}
       </p>
