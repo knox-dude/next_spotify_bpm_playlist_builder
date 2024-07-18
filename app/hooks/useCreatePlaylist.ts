@@ -18,18 +18,24 @@ const useCreatePlaylist = (session: AuthSession) => {
     setError(null);
 
     try {
-      const response = await createPlaylist(session, playlistName);
+      const createResponse = await createPlaylist(session, playlistName);
 
-      if (!response.ok) {
-        throw new Error('Failed to create playlist');
+      if (createResponse.error) {
+        throw new Error(`Failed to create playlist - ${createResponse.error.status} - ${createResponse.error.message}`);
       }
 
-      console.log(response);
+      console.log(createResponse);
 
-      const result = await response.json();
-      return result;
+      const addResponse = await addSongsToPlaylist(session, createResponse.id, songs.map((song) => song.id));
+
+      if (addResponse.error) {
+        throw new Error(`Failed to add songs to playlist - ${createResponse.error.status} - ${createResponse.error.message}`);
+      }
+
+      return createResponse.id;
     } catch (error: any) {
       setError(error.message);
+      alert(`error creating playlist - ${error.message}`);
       throw error;
     } finally {
       setLoading(false);
