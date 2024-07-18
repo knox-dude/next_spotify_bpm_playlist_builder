@@ -1,3 +1,5 @@
+// Disclaimer: Code partially taken from Next-Spotify-V2 (https://github.com/ankitk26/Next-Spotify-v2)
+
 import "@/app/globals.css";
 import { NextAuthProvider } from "@/app/providers/NextAuthProvider";
 import { Montserrat } from "next/font/google";

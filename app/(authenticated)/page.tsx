@@ -1,3 +1,5 @@
+// Disclaimer: Code partially taken from Next-Spotify-V2 (https://github.com/ankitk26/Next-Spotify-v2)
+
 import { redirect } from "next/navigation";
 import { getAuthSession } from "../utils/serverUtils";
 import { getAllUserLikedPlaylists, getTopItems, getUserLikedPlaylists } from "../lib/actions";
