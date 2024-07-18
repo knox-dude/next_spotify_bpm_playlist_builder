@@ -4,6 +4,14 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'scdn.co'
+      },
+      {
+        protocol: 'https',
+        hostname: 'seeded-session-images.scdn.co'
+      },
+      {
+        protocol: 'https',
         hostname: 'i.scdn.co',
       },
       {
