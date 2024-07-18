@@ -8,6 +8,10 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'i2o.scdn.co',
+      },
+      {
+        protocol: 'https',
         hostname: 't.scdn.co',
       },
       {
