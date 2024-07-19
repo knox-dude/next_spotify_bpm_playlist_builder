@@ -1,6 +1,6 @@
 // Disclaimer: Code partially taken from Next-Spotify-V2 (https://github.com/ankitk26/Next-Spotify-v2)
 
-import { DefaultSession } from "next-auth";
+import { DefaultSession } from 'next-auth';
 
 interface AuthUser {
   name: string;
@@ -15,14 +15,14 @@ interface AuthUser {
 export interface nonAuthUser {
   href: string;
   id: string;
-  type: "user";
+  type: 'user';
   uri: string;
   external_urls: {
     spotify: string;
   };
 }
 
-export interface AuthSession extends Omit<DefaultSession, "user"> {
+export interface AuthSession extends Omit<DefaultSession, 'user'> {
   user: AuthUser;
 }
 
