@@ -1,17 +1,15 @@
-import { TrackWithAnalysis } from "../types/types";
-import { useSelectedSongs } from "../providers/SelectedSongsProvider";
-import Image from "next/image";
-import { Album } from "lucide-react";
-import { FaCheckSquare } from "react-icons/fa";
-import { FaSquare } from "react-icons/fa";
+import { TrackWithAnalysis } from '../types/types';
+import { useSelectedSongs } from '../providers/SelectedSongsProvider';
+import Image from 'next/image';
+import { Album } from 'lucide-react';
+import { FaCheckSquare } from 'react-icons/fa';
+import { FaSquare } from 'react-icons/fa';
 
 interface ResultSongProps {
-  track: TrackWithAnalysis
+  track: TrackWithAnalysis;
 }
 
-function ResultSong({track}: ResultSongProps) {
-
-
+function ResultSong({ track }: ResultSongProps) {
   const { selectedSongs, toggleSong } = useSelectedSongs();
 
   return (
@@ -32,7 +30,7 @@ function ResultSong({track}: ResultSongProps) {
       )}
       <h3 className="font-semibold truncate w-full">{track.name}</h3>
       <h3 className="font-semibold truncate w-full">
-        BPM: {track.analysis.tempo}
+        BPM: {Math.round(track.analysis.tempo)}
       </h3>
       {selectedSongs.some((p) => p.id === track.id) ? (
         <FaCheckSquare style={{ width: 50, height: 50 }} />
@@ -43,5 +41,4 @@ function ResultSong({track}: ResultSongProps) {
   );
 }
 
-
-export default ResultSong
+export default ResultSong;
