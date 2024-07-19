@@ -1,16 +1,14 @@
 import {
   AuthSession,
   Track,
-  TrackAnalysis,
   Playlist,
   TrackWithAnalysis,
-} from "../types/types";
+} from '../types/types';
 import {
   getManyTrackAnalysis,
   getTrackFromPlaylistLink,
   getTopItems,
-} from "./actions";
-import { getAllUserLikedPlaylists } from "./actions";
+} from './actions';
 
 // splits arrays (of tracks) into chunks - spotify can only evaluate 100 tracks per API call
 function chunkArray<T>(array: T[], chunkSize: number): T[][] {
@@ -28,7 +26,7 @@ async function keepSongsInCorrectBpmRange(
   chunkedSongs: Track[][],
   session: AuthSession,
   getDoubled = false,
-  getHalved = false
+  getHalved = false,
 ): Promise<TrackWithAnalysis[]> {
   const results: TrackWithAnalysis[] = [];
 
@@ -36,7 +34,7 @@ async function keepSongsInCorrectBpmRange(
   for (const chunk of chunkedSongs) {
     const features = await getManyTrackAnalysis(
       session,
-      chunk.map((song) => song.id)
+      chunk.map((song) => song.id),
     );
 
     try {
@@ -53,7 +51,7 @@ async function keepSongsInCorrectBpmRange(
               song.tempo &&
               song.tempo >= lowBpm / 2 &&
               song.tempo <= highBpm / 2) ||
-            (song.tempo && song.tempo >= lowBpm && song.tempo <= highBpm))
+            (song.tempo && song.tempo >= lowBpm && song.tempo <= highBpm)),
       );
       // match the analysis with the original track, for later display
       filteredFeatures.forEach((analysis) => {
@@ -85,7 +83,7 @@ async function generateBpmSongs(
   useTopMediumTerm: boolean,
   useTopLongTerm: boolean,
   session: AuthSession,
-  playlists?: Playlist[]
+  playlists?: Playlist[],
 ): Promise<Map<Playlist, TrackWithAnalysis[]>> {
   // const playlistTracks = [];
   const playlistTracks = new Map<Playlist, TrackWithAnalysis[]>();
@@ -93,7 +91,7 @@ async function generateBpmSongs(
 
   if (!playlists) {
     if (!useTopShortTerm && !useTopMediumTerm && !useTopLongTerm) {
-      throw new Error("No playlists or top tracks selected");
+      throw new Error('No playlists or top tracks selected');
     }
   }
 
@@ -101,11 +99,11 @@ async function generateBpmSongs(
   for (const playlist of playlists as Playlist[]) {
     const tracks = await getTrackFromPlaylistLink(
       session,
-      playlist.tracks.href
+      playlist.tracks.href,
     );
     const chunkedSongs = chunkArray(
       tracks.map((item) => item.track),
-      100
+      100,
     );
     const filteredTracks = await keepSongsInCorrectBpmRange(
       lowBpm,
@@ -113,7 +111,7 @@ async function generateBpmSongs(
       chunkedSongs,
       session,
       useDoubleSpeed,
-      useHalfSpeed
+      useHalfSpeed,
     );
     playlistTracks.set(playlist, filteredTracks);
   }
@@ -122,8 +120,8 @@ async function generateBpmSongs(
   if (useTopShortTerm) {
     const topShortTerm = await getTopItems({
       session,
-      timeRange: "short_term",
-      type: "tracks",
+      timeRange: 'short_term',
+      type: 'tracks',
       limit: 50,
     });
     console.log(topShortTerm);
@@ -133,3 +131,4 @@ async function generateBpmSongs(
 }
 
 export default generateBpmSongs;
+export { chunkArray, keepSongsInCorrectBpmRange, generateBpmSongs };
