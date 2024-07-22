@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
-import { Playlist } from '../types/types';
+import { Playlist } from '../types/updatedTypes';
 
 interface SelectedPlaylistsContextProps {
   selectedPlaylists: Playlist[];
@@ -8,29 +8,40 @@ interface SelectedPlaylistsContextProps {
   clearAllPlaylists: () => void;
 }
 
-const SelectedPlaylistsContext = createContext<SelectedPlaylistsContextProps | undefined>(undefined);
+const SelectedPlaylistsContext = createContext<
+  SelectedPlaylistsContextProps | undefined
+>(undefined);
 
-export const SelectedPlaylistsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const SelectedPlaylistsProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [selectedPlaylists, setSelectedPlaylists] = useState<Playlist[]>([]);
 
   const togglePlaylist = (playlist: Playlist) => {
     setSelectedPlaylists((prev) =>
       prev.some((p) => p.id === playlist.id)
         ? prev.filter((p) => p.id !== playlist.id)
-        : [...prev, playlist]
+        : [...prev, playlist],
     );
   };
 
   const selectAllPlaylists = (playlists: Playlist[]) => {
     setSelectedPlaylists(playlists);
-  }
+  };
 
   const clearAllPlaylists = () => {
     setSelectedPlaylists([]);
-  }
+  };
 
   return (
-    <SelectedPlaylistsContext.Provider value={{ selectedPlaylists, togglePlaylist, selectAllPlaylists, clearAllPlaylists }}>
+    <SelectedPlaylistsContext.Provider
+      value={{
+        selectedPlaylists,
+        togglePlaylist,
+        selectAllPlaylists,
+        clearAllPlaylists,
+      }}
+    >
       {children}
     </SelectedPlaylistsContext.Provider>
   );
@@ -39,7 +50,9 @@ export const SelectedPlaylistsProvider: React.FC<{ children: ReactNode }> = ({ c
 export const useSelectedPlaylists = () => {
   const context = useContext(SelectedPlaylistsContext);
   if (!context) {
-    throw new Error('useSelectedPlaylists must be used within a SelectedPlaylistsProvider');
+    throw new Error(
+      'useSelectedPlaylists must be used within a SelectedPlaylistsProvider',
+    );
   }
   return context;
 };

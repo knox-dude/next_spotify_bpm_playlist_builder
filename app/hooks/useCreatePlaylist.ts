@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AuthSession } from '../types/types';
 import { TrackWithAudioFeature } from '../types/updatedTypes';
-import { createPlaylist, addSongsToPlaylist } from '../lib/actionsCopy';
+import { createPlaylist, addSongsToPlaylist } from '../lib/actions';
 
 const useCreatePlaylist = (session: AuthSession) => {
   const [loading, setLoading] = useState(false);

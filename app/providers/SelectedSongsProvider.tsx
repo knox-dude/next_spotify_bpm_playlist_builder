@@ -1,38 +1,51 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
-import { Playlist, TrackWithAnalysis } from '../types/types';
+import { Playlist, TrackWithAudioFeature } from '../types/updatedTypes';
 
 interface SelectedSongsContextProps {
-  selectedSongs: TrackWithAnalysis[];
-  toggleSong: (song: TrackWithAnalysis) => void;
-  selectSongs: (songs: TrackWithAnalysis[]) => void;
-  clearSongs: (songs: TrackWithAnalysis[]) => void;
+  selectedSongs: TrackWithAudioFeature[];
+  toggleSong: (song: TrackWithAudioFeature) => void;
+  selectSongs: (songs: TrackWithAudioFeature[]) => void;
+  clearSongs: (songs: TrackWithAudioFeature[]) => void;
 }
 
-const SelectedSongsContext = createContext<SelectedSongsContextProps | undefined>(undefined);
+const SelectedSongsContext = createContext<
+  SelectedSongsContextProps | undefined
+>(undefined);
 
-export const SelectedSongsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [selectedSongs, setSelectedSongs] = useState<TrackWithAnalysis[]>([]);
+export const SelectedSongsProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [selectedSongs, setSelectedSongs] = useState<TrackWithAudioFeature[]>(
+    [],
+  );
 
-  const toggleSong = (song: TrackWithAnalysis) => {
+  const toggleSong = (song: TrackWithAudioFeature) => {
     setSelectedSongs((prev) =>
-      prev.some((p) => p.id === song.id)
-        ? prev.filter((p) => p.id !== song.id)
-        : [...prev, song]
+      prev.some((p) => p.track.id === song.track.id)
+        ? prev.filter((p) => p.track.id !== song.track.id)
+        : [...prev, song],
     );
   };
 
-  const selectSongs = (songs: TrackWithAnalysis[]) => {
-    const songIds = new Set(songs.map((song) => (song.id)));
-    setSelectedSongs((prev) => [...prev.filter((song) => !(songIds.has(song.id))), ...songs]);
-  }
+  const selectSongs = (songs: TrackWithAudioFeature[]) => {
+    const songIds = new Set(songs.map((song) => song.track.id));
+    setSelectedSongs((prev) => [
+      ...prev.filter((song) => !songIds.has(song.track.id)),
+      ...songs,
+    ]);
+  };
 
-  const clearSongs = (songs: TrackWithAnalysis[]) => {
-    const songIds = new Set(songs.map((song) => song.id));
-    setSelectedSongs((prev) => prev.filter((song) => !(songIds.has(song.id))));
-  }
+  const clearSongs = (songs: TrackWithAudioFeature[]) => {
+    const songIds = new Set(songs.map((song) => song.track.id));
+    setSelectedSongs((prev) =>
+      prev.filter((song) => !songIds.has(song.track.id)),
+    );
+  };
 
   return (
-    <SelectedSongsContext.Provider value={{ selectedSongs, toggleSong, selectSongs, clearSongs }}>
+    <SelectedSongsContext.Provider
+      value={{ selectedSongs, toggleSong, selectSongs, clearSongs }}
+    >
       {children}
     </SelectedSongsContext.Provider>
   );
@@ -41,7 +54,9 @@ export const SelectedSongsProvider: React.FC<{ children: ReactNode }> = ({ child
 export const useSelectedSongs = () => {
   const context = useContext(SelectedSongsContext);
   if (!context) {
-    throw new Error('useSelectedSongs must be used within a SelectedSongsProvider');
+    throw new Error(
+      'useSelectedSongs must be used within a SelectedSongsProvider',
+    );
   }
   return context;
 };

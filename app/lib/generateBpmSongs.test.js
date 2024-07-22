@@ -2,8 +2,8 @@ import {
   chunkArray,
   keepSongsInCorrectBpmRange,
   generateBpmSongs,
-} from './generateBpmSongsCopy';
-import * as actions from './actionsCopy';
+} from './generateBpmSongs';
+import * as actions from './actions';
 
 jest.mock('./actionsCopy', () => ({
   getManyTrackAnalysis: jest.fn(),

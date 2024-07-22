@@ -3,7 +3,7 @@ import PlaylistInputCard from './PlaylistInputCard';
 import SearchBar from './DebouncedSearchBar';
 import { AuthSession } from '../types/types';
 import { Playlist } from '@/app/types/updatedTypes';
-import { getAllUserLikedPlaylists } from '../lib/actionsCopy';
+import { getAllUserLikedPlaylists } from '../lib/actions';
 import { Audio } from 'react-loader-spinner';
 import { useSelectedPlaylists } from '../providers/SelectedPlaylistsProvider';
 

@@ -1,9 +1,5 @@
-import {
-  AuthSession,
-  Track,
-  Playlist,
-  TrackWithAnalysis,
-} from '../types/types';
+import { AuthSession } from '../types/types';
+import { Track, Playlist, TrackWithAudioFeature } from '../types/updatedTypes';
 import {
   getManyTrackAnalysis,
   getTrackFromPlaylistLink,
@@ -27,8 +23,8 @@ async function keepSongsInCorrectBpmRange(
   session: AuthSession,
   getDoubled = false,
   getHalved = false,
-): Promise<TrackWithAnalysis[]> {
-  const results: TrackWithAnalysis[] = [];
+): Promise<TrackWithAudioFeature[]> {
+  const results: TrackWithAudioFeature[] = [];
 
   // extract features
   for (const chunk of chunkedSongs) {
@@ -53,6 +49,7 @@ async function keepSongsInCorrectBpmRange(
               song.tempo <= highBpm / 2) ||
             (song.tempo && song.tempo >= lowBpm && song.tempo <= highBpm)),
       );
+
       // match the analysis with the original track, for later display
       filteredFeatures.forEach((analysis) => {
         const track = chunk.find((song) => song.id === analysis.id);
@@ -64,7 +61,6 @@ async function keepSongsInCorrectBpmRange(
         }
       });
     } catch (e) {
-      // TODO: testing. I think this error is gone. I can't be 100% sure until testing.
       console.debug(e);
     }
   }
@@ -84,10 +80,9 @@ async function generateBpmSongs(
   useTopLongTerm: boolean,
   session: AuthSession,
   playlists?: Playlist[],
-): Promise<Map<Playlist, TrackWithAnalysis[]>> {
+): Promise<Map<Playlist, TrackWithAudioFeature[]>> {
   // const playlistTracks = [];
-  const playlistTracks = new Map<Playlist, TrackWithAnalysis[]>();
-  const results = [];
+  const playlistTracks = new Map<Playlist, TrackWithAudioFeature[]>();
 
   if (!playlists) {
     if (!useTopShortTerm && !useTopMediumTerm && !useTopLongTerm) {
@@ -102,7 +97,7 @@ async function generateBpmSongs(
       playlist.tracks.href,
     );
     const chunkedSongs = chunkArray(
-      tracks.map((item) => item.track),
+      tracks.map((item) => item.track as Track),
       100,
     );
     const filteredTracks = await keepSongsInCorrectBpmRange(
