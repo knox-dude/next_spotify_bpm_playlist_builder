@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Playlist, TrackWithAnalysis, AuthSession } from '../types/types';
-import generateBpmSongs from '../lib/generateBpmSongs';
+import { useState } from 'react';
+import { AuthSession } from '../types/types';
+import { Playlist, TrackWithAudioFeature } from '../types/updatedTypes';
+import generateBpmSongs from '../lib/generateBpmSongsCopy';
 
 interface HandleBpmGenerationProps {
   lowBpm: string;
@@ -15,7 +16,9 @@ interface HandleBpmGenerationProps {
 
 const useGenerateBpmSongs = (session: AuthSession) => {
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<Map<Playlist, TrackWithAnalysis[]>>(new Map());
+  const [results, setResults] = useState<
+    Map<Playlist, TrackWithAudioFeature[]>
+  >(new Map());
   const [completed, setCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,7 +35,7 @@ const useGenerateBpmSongs = (session: AuthSession) => {
         params.mediumTerm,
         params.longTerm,
         session,
-        params.selectedPlaylists
+        params.selectedPlaylists,
       );
       setResults(result);
       setCompleted(true);

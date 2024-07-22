@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import PlaylistInputCard from './PlaylistInputCard';
 import SearchBar from './DebouncedSearchBar';
-import { AuthSession, Playlist } from '../types/types';
-import { getAllUserLikedPlaylists } from '../lib/actions';
+import { AuthSession } from '../types/types';
+import { Playlist } from '@/app/types/updatedTypes';
+import { getAllUserLikedPlaylists } from '../lib/actionsCopy';
 import { Audio } from 'react-loader-spinner';
 import { useSelectedPlaylists } from '../providers/SelectedPlaylistsProvider';
 

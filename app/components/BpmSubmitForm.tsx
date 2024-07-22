@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AuthSession, Playlist } from '../types/types';
+import { AuthSession } from '../types/types';
+import { Playlist } from '../types/updatedTypes';
 import { useSelectedPlaylists } from '../providers/SelectedPlaylistsProvider';
 import BpmInputSection from './BpmInputSection';
 import OptionCheckboxes from './OptionCheckboxes';

@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { SelectedPlaylistsProvider } from '../providers/SelectedPlaylistsProvider';
 import BpmSubmitForm from './BpmSubmitForm';
-import { AuthSession, Playlist, TrackWithAnalysis } from '../types/types';
+import { AuthSession } from '../types/types';
+import { Playlist, TrackWithAudioFeature } from '../types/updatedTypes';
 import { Audio } from 'react-loader-spinner';
 import ResultPlaylist from './ResultPlaylist';
 import { SelectedSongsProvider } from '../providers/SelectedSongsProvider';
@@ -47,7 +48,7 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
     generateSongs(params);
   };
 
-  const saveSongsToPlaylist = async (songs: TrackWithAnalysis[]) => {
+  const saveSongsToPlaylist = async (songs: TrackWithAudioFeature[]) => {
     try {
       const newPlaylistId = await createPlaylistAndAddTracks(
         newPlaylistName,
@@ -91,12 +92,30 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
                 onClick={() => {
                   setCompleted(false);
                 }}
-                className="w-1/2 self-center bg-paper-500 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
+                className="w-1/3 self-center bg-paper-500 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
               >
                 Back to Playlist Builder
               </button>
+            </div>
+
+            <div className="flex items-center align-middle w-11/12 justify-center">
+              <div className="h-[60vh] overflow-auto w-full align-middle">
+                {Array.from(results.entries()).map(
+                  ([playlist, tracks]) =>
+                    tracks.length > 0 && (
+                      <ResultPlaylist
+                        playlist={playlist}
+                        tracks={tracks}
+                        key={playlist.id}
+                      />
+                    ),
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4 justify-center m-2 w-100vw">
               <TextInput
-                className={'self-center w-1/2'}
+                className={'self-center w-1/3'}
                 label="playlist-name"
                 value={newPlaylistName}
                 placeholder={'playlist name'}
@@ -104,17 +123,6 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
               />
               <SaveSongsButton onClick={saveSongsToPlaylist} />
             </div>
-
-            {Array.from(results.entries()).map(
-              ([playlist, tracks]) =>
-                tracks.length > 0 && (
-                  <ResultPlaylist
-                    playlist={playlist}
-                    tracks={tracks}
-                    key={playlist.id}
-                  />
-                ),
-            )}
           </div>
         )}
       </SelectedSongsProvider>

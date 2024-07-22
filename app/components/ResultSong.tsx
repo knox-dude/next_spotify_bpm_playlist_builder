@@ -1,4 +1,4 @@
-import { TrackWithAnalysis } from '../types/types';
+import { TrackWithAudioFeature } from '../types/updatedTypes';
 import { useSelectedSongs } from '../providers/SelectedSongsProvider';
 import Image from 'next/image';
 import { Album } from 'lucide-react';
@@ -6,7 +6,7 @@ import { FaCheckSquare } from 'react-icons/fa';
 import { FaSquare } from 'react-icons/fa';
 
 interface ResultSongProps {
-  track: TrackWithAnalysis;
+  track: TrackWithAudioFeature;
 }
 
 function ResultSong({ track }: ResultSongProps) {

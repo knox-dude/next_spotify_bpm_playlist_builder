@@ -1,12 +1,16 @@
 import { useState } from 'react';
-import { AuthSession, TrackWithAnalysis } from '../types/types';
-import { createPlaylist, addSongsToPlaylist } from '../lib/actions';
+import { AuthSession } from '../types/types';
+import { TrackWithAudioFeature } from '../types/updatedTypes';
+import { createPlaylist, addSongsToPlaylist } from '../lib/actionsCopy';
 
 const useCreatePlaylist = (session: AuthSession) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createPlaylistAndAddTracks = async (playlistName: string, songs: TrackWithAnalysis[]) => {
+  const createPlaylistAndAddTracks = async (
+    playlistName: string,
+    songs: TrackWithAudioFeature[],
+  ) => {
     if (!playlistName) {
       throw new Error('Playlist name is required');
     }
@@ -21,15 +25,23 @@ const useCreatePlaylist = (session: AuthSession) => {
       const createResponse = await createPlaylist(session, playlistName);
 
       if (createResponse.error) {
-        throw new Error(`Failed to create playlist - ${createResponse.error.status} - ${createResponse.error.message}`);
+        throw new Error(
+          `Failed to create playlist - ${createResponse.error.status} - ${createResponse.error.message}`,
+        );
       }
 
       console.log(createResponse);
 
-      const addResponse = await addSongsToPlaylist(session, createResponse.id, songs.map((song) => song.id));
+      const addResponse = await addSongsToPlaylist(
+        session,
+        createResponse.id,
+        songs.map((song) => song.id),
+      );
 
       if (addResponse.error) {
-        throw new Error(`Failed to add songs to playlist - ${createResponse.error.status} - ${createResponse.error.message}`);
+        throw new Error(
+          `Failed to add songs to playlist - ${createResponse.error.status} - ${createResponse.error.message}`,
+        );
       }
 
       return createResponse.id;

@@ -825,8 +825,8 @@ export interface TopTracksResult {
 
 export interface Image {
   url: string;
-  height: number;
-  width: number;
+  height: number | null;
+  width: number | null;
 }
 
 export interface SimplifiedAudiobook {
@@ -1260,7 +1260,6 @@ export interface Queue {
   queue: TrackItem[];
 }
 
-export interface TrackWithAudioFeature {
-  track: Track;
-  audioFeature: AudioFeatures;
+export interface TrackWithAudioFeature extends Track {
+  analysis: AudioFeatures;
 }
