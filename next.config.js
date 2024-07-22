@@ -4,11 +4,11 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'scdn.co'
+        hostname: 'scdn.co',
       },
       {
         protocol: 'https',
-        hostname: 'seeded-session-images.scdn.co'
+        hostname: 'seeded-session-images.scdn.co',
       },
       {
         protocol: 'https',
@@ -79,6 +79,9 @@ const nextConfig = {
         hostname: 'image-cdn-ak.spotifycdn.com',
       },
     ],
+  },
+  experimental: {
+    forceSwcTransforms: true,
   },
 };
 
