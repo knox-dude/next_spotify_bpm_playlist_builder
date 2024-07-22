@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
-import { Playlist, TrackWithAudioFeature } from '../types/updatedTypes';
+import { TrackWithAudioFeature } from '../types/updatedTypes';
 
 interface SelectedSongsContextProps {
   selectedSongs: TrackWithAudioFeature[];
