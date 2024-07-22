@@ -46,13 +46,13 @@ const PlaylistInputCard: React.FC<PlaylistInputCardProps> = ({
         {playlist.name}
       </p>
       {isHovered && (
-        <div className="absolute bottom-full left-1/2 transform translate-y-4 -translate-x-1/2 mb-2 w-64 bg-gray-700 text-white text-center text-sm rounded-md py-1 opacity-90">
+        <div className="absolute bottom-full left-1/2 transform translate-y-8 -translate-x-1/2 mb-2 w-64 bg-gray-700 text-white text-center text-sm rounded-md py-1 opacity-90">
           {playlist.name}
         </div>
       )}
       {selected && (
-        <div className="absolute top-1 right-1 text-green-600">
-          <MdOutlineCheckCircle size={40} />
+        <div className="absolute text-green-600">
+          <MdOutlineCheckCircle size={100} />
         </div>
       )}
     </div>
