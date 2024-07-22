@@ -21,25 +21,23 @@ export const SelectedSongsProvider: React.FC<{ children: ReactNode }> = ({
 
   const toggleSong = (song: TrackWithAudioFeature) => {
     setSelectedSongs((prev) =>
-      prev.some((p) => p.track.id === song.track.id)
-        ? prev.filter((p) => p.track.id !== song.track.id)
+      prev.some((p) => p.id === song.id)
+        ? prev.filter((p) => p.id !== song.id)
         : [...prev, song],
     );
   };
 
   const selectSongs = (songs: TrackWithAudioFeature[]) => {
-    const songIds = new Set(songs.map((song) => song.track.id));
+    const songIds = new Set(songs.map((song) => song.id));
     setSelectedSongs((prev) => [
-      ...prev.filter((song) => !songIds.has(song.track.id)),
+      ...prev.filter((song) => !songIds.has(song.id)),
       ...songs,
     ]);
   };
 
   const clearSongs = (songs: TrackWithAudioFeature[]) => {
-    const songIds = new Set(songs.map((song) => song.track.id));
-    setSelectedSongs((prev) =>
-      prev.filter((song) => !songIds.has(song.track.id)),
-    );
+    const songIds = new Set(songs.map((song) => song.id));
+    setSelectedSongs((prev) => prev.filter((song) => !songIds.has(song.id)));
   };
 
   return (
