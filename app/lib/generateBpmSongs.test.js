@@ -5,7 +5,7 @@ import {
 } from './generateBpmSongs';
 import * as actions from './actions';
 
-jest.mock('./actionsCopy', () => ({
+jest.mock('./actions', () => ({
   getManyTrackAnalysis: jest.fn(),
   getTrackFromPlaylistLink: jest.fn(),
   getTopItems: jest.fn(),
