@@ -1,13 +1,13 @@
 // Disclaimer: Code partially taken from Next-Spotify-V2 (https://github.com/ankitk26/Next-Spotify-v2)
 
-"use client";
+'use client';
 
-import { signIn } from "next-auth/react";
-import Image from "next/image";
+import { signIn } from 'next-auth/react';
+import Image from 'next/image';
 
 export default function Login() {
   const handleLogin = () => {
-    signIn("spotify", { callbackUrl: "http://localhost:3000" });
+    signIn('spotify', { callbackUrl: 'http://localhost:3000' });
   };
 
   return (
@@ -24,6 +24,16 @@ export default function Login() {
       >
         Login
       </button>
+      <div className="flex flex-col items-center">
+        <p className="font-bold text-xl">
+          Use these credentials to experience the app:
+        </p>
+
+        <p>Username</p>
+        <p>spotifybpmtest@gmail.com</p>
+        <p>Password</p>
+        <p>TestingPassword!NotSafe!</p>
+      </div>
     </div>
   );
 }
