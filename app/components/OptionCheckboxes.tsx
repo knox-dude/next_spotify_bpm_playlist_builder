@@ -42,7 +42,7 @@ const OptionCheckboxes: React.FC<OptionCheckboxesProps> = ({
       />
     </div>
 
-    <h2 className="self-center flex justify-around w-11/12 text-gray-400 font-bold text-xl">
+    {/* <h2 className="self-center flex justify-around w-11/12 text-gray-400 font-bold text-xl">
       Use Top Songs?
     </h2>
     <div className="flex justify-between gap-4">
@@ -64,7 +64,7 @@ const OptionCheckboxes: React.FC<OptionCheckboxesProps> = ({
         hint="Include your top songs of all time."
         onChange={(e) => setLongTerm(e.target.checked)}
       />
-    </div>
+    </div> */}
   </>
 );
 
