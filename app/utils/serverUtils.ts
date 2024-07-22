@@ -1,10 +1,10 @@
 // Disclaimer: Code taken from Next-Spotify-V2 (https://github.com/ankitk26/Next-Spotify-v2)
 
-"use server";
+'use server';
 
-import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
-import { AuthSession } from "@/app/types/types";
-import { getServerSession } from "next-auth/next";
+import { authOptions } from '../api/auth/[...nextauth]/auth';
+import { AuthSession } from '../types/types';
+import { getServerSession } from 'next-auth/next';
 
 export const customGet = async (url: string, session: AuthSession | null) => {
   if (!session) {

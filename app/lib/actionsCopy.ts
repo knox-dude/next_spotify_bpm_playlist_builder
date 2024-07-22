@@ -11,7 +11,7 @@ import {
   AudioFeatures,
   SimplifiedPlaylist,
 } from '@/app/types/updatedTypes';
-import { customGet } from '@/app/utils/serverUtils';
+import { customGet } from '../utils/serverUtils';
 
 export const createPlaylist = async (
   session: AuthSession,
