@@ -25,7 +25,7 @@ export default function RootLayout({
         <body
           className={
             fontFamily.className +
-            ' h-screen flex flex-col overflow-hidden bg-background text-white items-stretch p-2'
+            ' h-screen flex flex-col overflow-hidden bg-background text-white items-stretch p-2 pb-12'
           }
         >
           <div className="flex flex-col col-span-8 overflow-auto rounded-lg bg-paper-400">
