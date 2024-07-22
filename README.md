@@ -71,6 +71,8 @@ openssl rand -base64 32
 - Implement functionality for top songs (not high priority since most people can only use the Test account)
 - Handle duplicate songs that are present in multiple playlists
 - Add a logout button (lol, it's actually not that necessary)
+- Add a message if no songs are found in BPM range
+- Add a mobile layout (grrrrrr I know, I know, it's necessary... but at what cost to my sanity...)
 
 ## Disclaimer
 
