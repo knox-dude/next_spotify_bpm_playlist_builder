@@ -48,24 +48,26 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
     generateSongs(params);
   };
 
-  const saveSongsToPlaylist = async (songs: TrackWithAudioFeature[]) => {
+  const saveSongsToPlaylist = async (
+    songs: TrackWithAudioFeature[],
+    newWindow: Window | null,
+  ) => {
     try {
       const newPlaylistId = await createPlaylistAndAddTracks(
         newPlaylistName,
         songs,
       );
       console.log('Playlist created:', newPlaylistId);
-      alert(
-        'Playlist created! Please check the upper right corner of your search bar to allow popups - this will take you to the new playlist.',
-      );
-      window.open(
-        `https://open.spotify.com/playlist/${newPlaylistId}`,
-        '_blank',
-      );
+      if (newWindow) {
+        newWindow.location.href = `https://open.spotify.com/playlist/${newPlaylistId}`;
+      }
       // Handle post-creation logic, e.g., reset state, show a success message, etc.
     } catch (error) {
       console.error('Error creating playlist:', error);
       alert(`Error creating playlist: ${error}`);
+      if (newWindow) {
+        newWindow.close();
+      }
     }
   };
 
