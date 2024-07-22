@@ -55,7 +55,9 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
         songs,
       );
       console.log('Playlist created:', newPlaylistId);
-      alert('Playlist created! Taking you now...');
+      alert(
+        'Playlist created! Please check the upper right corner of your search bar to allow popups - this will take you to the new playlist.',
+      );
       window.open(
         `https://open.spotify.com/playlist/${newPlaylistId}`,
         '_blank',
