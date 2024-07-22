@@ -102,17 +102,25 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
               </button>
             </div>
 
-            <div className="flex items-center align-middle w-11/12 justify-center">
+            <div className="flex items-center align-middle w-11/12 justify-center text-center">
               <div className="h-[60vh] overflow-auto w-full align-middle">
-                {Array.from(results.entries()).map(
-                  ([playlist, tracks]) =>
-                    tracks.length > 0 && (
-                      <ResultPlaylist
-                        playlist={playlist}
-                        tracks={tracks}
-                        key={playlist.id}
-                      />
-                    ),
+                {Array.from(results.entries()).some(
+                  ([_, tracks]) => tracks.length > 0,
+                ) ? (
+                  Array.from(results.entries()).map(
+                    ([playlist, tracks]) =>
+                      tracks.length > 0 && (
+                        <ResultPlaylist
+                          playlist={playlist}
+                          tracks={tracks}
+                          key={playlist.id}
+                        />
+                      ),
+                  )
+                ) : (
+                  <p className="text-3xl font-bold self-center">
+                    No tracks found with chosen BPM :(
+                  </p>
                 )}
               </div>
             </div>
