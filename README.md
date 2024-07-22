@@ -68,8 +68,9 @@ openssl rand -base64 32
 
 ## To-do features
 
-- Implement top songs (current top priority)
+- Implement functionality for top songs (not high priority since most people can only use the Test account)
 - Handle duplicate songs that are present in multiple playlists
+- Add a logout button (lol, it's actually not that necessary)
 
 ## Disclaimer
 
