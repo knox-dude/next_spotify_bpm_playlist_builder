@@ -1,5 +1,7 @@
 # Spotify BPM Playlist Builder
 
+[Deployed Link](https://spotify-bpm-playlist-builder.vercel.app/)
+
 Spotify BPM Playlist Builder is a web app that lets users build playlists based off of a BPM (beats per minute) range. It analyzes the user's playlists, then grabs songs that match the BPM range the user indicated. It's intended to facilitate playlist creation for jogging, walking, or any activity that syncs up to a rhythmic pace. Built with React, Typescript, Tailwind, and NextJS.
 
 ## Features
