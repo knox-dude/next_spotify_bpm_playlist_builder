@@ -45,8 +45,7 @@ export const addSongsToPlaylist = async (
   while (tracks.length > 100) {
     let hundredTracks = tracks.slice(0, 100);
     let processedTracks = hundredTracks
-      .map((trackId) => `spotify:track:${trackId}`)
-      .join();
+      .map((trackId) => `spotify:track:${trackId}`);
     const res = await fetch(
       `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
       {
