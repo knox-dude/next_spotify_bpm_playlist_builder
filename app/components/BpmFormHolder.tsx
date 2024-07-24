@@ -11,7 +11,7 @@ import SaveSongsButton from './SaveSongsButton';
 import TextInput from './TextInput';
 import useCreatePlaylist from '../hooks/useCreatePlaylist';
 import useGenerateBpmSongs from '../hooks/useGenerateBpmSongs';
-import SignoutButton from './SignoutButton';
+import { signOut } from 'next-auth/react';
 
 interface HandleBpmGenerationProps {
   lowBpm: string;
@@ -74,7 +74,7 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
 
   return (
     <SelectedPlaylistsProvider>
-      <SignoutButton />
+      <button className="self-center bg-paper-500 hover:bg-paper-600 text-white font-bold py-2 px-4 rounded" onClick={() => signOut()}>Sign out</button>
       {!generateLoading && !completed && (
         <BpmSubmitForm
           session={session}

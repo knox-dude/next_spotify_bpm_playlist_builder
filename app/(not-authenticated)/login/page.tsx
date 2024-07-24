@@ -29,9 +29,8 @@ export default function Login() {
           Use these credentials to experience the app:
         </p>
 
-        <p>Username</p>
+        <p className='font-bold text-slate-400'>Username, Password (Copy These Now!)</p>
         <p>spotifybpmtest@gmail.com</p>
-        <p>Password</p>
         <p>TestingPassword!NotSafe!</p>
       </div>
     </div>
