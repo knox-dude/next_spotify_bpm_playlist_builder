@@ -11,6 +11,7 @@ import SaveSongsButton from './SaveSongsButton';
 import TextInput from './TextInput';
 import useCreatePlaylist from '../hooks/useCreatePlaylist';
 import useGenerateBpmSongs from '../hooks/useGenerateBpmSongs';
+import SignoutButton from './SignoutButton';
 
 interface HandleBpmGenerationProps {
   lowBpm: string;
@@ -73,6 +74,7 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
 
   return (
     <SelectedPlaylistsProvider>
+      <SignoutButton />
       {!generateLoading && !completed && (
         <BpmSubmitForm
           session={session}
