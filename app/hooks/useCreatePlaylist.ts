@@ -40,7 +40,7 @@ const useCreatePlaylist = (session: AuthSession) => {
 
       if (addResponse.error) {
         throw new Error(
-          `Failed to add songs to playlist - ${createResponse.error.status} - ${createResponse.error.message}`,
+          `Failed to add songs to playlist - ${addResponse.error.status} - ${addResponse.error.message}`,
         );
       }
 
