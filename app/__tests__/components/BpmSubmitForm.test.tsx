@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { act, render, screen, fireEvent } from '@testing-library/react';
 import BpmSubmitForm from '../../components/BpmSubmitForm';
 import { useSelectedPlaylists } from '../../providers/SelectedPlaylistsProvider';
 import { AuthSession } from '../../types/types';
@@ -87,46 +87,54 @@ describe('BpmSubmitForm', () => {
     mockUseSelectedPlaylists.mockReturnValue({ selectedPlaylists: [] });
   });
 
-  test('renders the component with initial state', () => {
-    render(
-      <BpmSubmitForm
-        session={mockSession}
-        handleBpmGeneration={mockHandleBpmGeneration}
-      />,
-    );
+  test('renders the component with initial state', async () => {
+    await act(async () => {
+      render(
+        <BpmSubmitForm
+          session={mockSession}
+          handleBpmGeneration={mockHandleBpmGeneration}
+        />,
+      );
+    });
+
     expect(screen.getByText('Choose BPM range')).toBeInTheDocument();
     expect(screen.getByText('Choose options')).toBeInTheDocument();
   });
 
-  test('handles BPM input changes', () => {
-    render(
-      <BpmSubmitForm
-        session={mockSession}
-        handleBpmGeneration={mockHandleBpmGeneration}
-      />,
-    );
+  test('handles BPM input changes', async () => {
+    await act(async () => {
+      render(
+        <BpmSubmitForm
+          session={mockSession}
+          handleBpmGeneration={mockHandleBpmGeneration}
+        />,
+      );
+    });
     const lowBpmInput = screen.getByPlaceholderText(
       'Enter lower BPM',
     ) as HTMLInputElement;
     const highBpmInput = screen.getByPlaceholderText(
       'Enter higher BPM',
     ) as HTMLInputElement;
-
-    fireEvent.change(lowBpmInput, { target: { value: '60' } });
-    fireEvent.change(highBpmInput, { target: { value: '120' } });
+    await act(async () => {
+      fireEvent.change(lowBpmInput, { target: { value: '60' } });
+      fireEvent.change(highBpmInput, { target: { value: '120' } });
+    });
 
     expect(lowBpmInput.value).toBe('60');
     expect(highBpmInput.value).toBe('120');
   });
 
   // note: short-term, medium-term, and long-term are not currently implemented
-  test('handles option checkbox changes', () => {
-    render(
-      <BpmSubmitForm
-        session={mockSession}
-        handleBpmGeneration={mockHandleBpmGeneration}
-      />,
-    );
+  test('handles option checkbox changes', async () => {
+    await act(async () => {
+      render(
+        <BpmSubmitForm
+          session={mockSession}
+          handleBpmGeneration={mockHandleBpmGeneration}
+        />,
+      );
+    });
     const doubleSpeedCheckbox = screen.getByLabelText(
       'double speed',
     ) as HTMLInputElement;
@@ -143,8 +151,10 @@ describe('BpmSubmitForm', () => {
     //   'Long Term',
     // ) as HTMLInputElement;
 
-    fireEvent.click(doubleSpeedCheckbox);
-    fireEvent.click(halfSpeedCheckbox);
+    await act(async () => {
+      fireEvent.click(doubleSpeedCheckbox);
+      fireEvent.click(halfSpeedCheckbox);
+    });
     // fireEvent.click(shortTermCheckbox);
     // fireEvent.click(mediumTermCheckbox);
     // fireEvent.click(longTermCheckbox);
@@ -156,16 +166,18 @@ describe('BpmSubmitForm', () => {
     // expect(longTermCheckbox.checked).toBe(true);
   });
 
-  test('submits the form with valid data', () => {
+  test('submits the form with valid data', async () => {
     mockUseSelectedPlaylists.mockReturnValue({
       selectedPlaylists: [{ id: 'playlist1' }],
     });
-    render(
-      <BpmSubmitForm
-        session={mockSession}
-        handleBpmGeneration={mockHandleBpmGeneration}
-      />,
-    );
+    await act(async () => {
+      render(
+        <BpmSubmitForm
+          session={mockSession}
+          handleBpmGeneration={mockHandleBpmGeneration}
+        />,
+      );
+    });
 
     const lowBpmInput = screen.getByPlaceholderText(
       'Enter lower BPM',
@@ -174,9 +186,10 @@ describe('BpmSubmitForm', () => {
       'Enter higher BPM',
     ) as HTMLInputElement;
     const generateButton = screen.getByRole('button', { name: /generate/i });
-
-    fireEvent.change(lowBpmInput, { target: { value: '60' } });
-    fireEvent.change(highBpmInput, { target: { value: '120' } });
+    await act(async () => {
+      fireEvent.change(lowBpmInput, { target: { value: '60' } });
+      fireEvent.change(highBpmInput, { target: { value: '120' } });
+    });
 
     fireEvent.click(generateButton);
 
@@ -192,13 +205,15 @@ describe('BpmSubmitForm', () => {
     });
   });
 
-  test('prevents form submission with invalid data', () => {
-    render(
-      <BpmSubmitForm
-        session={mockSession}
-        handleBpmGeneration={mockHandleBpmGeneration}
-      />,
-    );
+  test('prevents form submission with invalid data', async () => {
+    await act(async () => {
+      render(
+        <BpmSubmitForm
+          session={mockSession}
+          handleBpmGeneration={mockHandleBpmGeneration}
+        />,
+      );
+    });
     const generateButton = screen.getByRole('button', { name: /generate/i });
 
     fireEvent.click(generateButton);
