@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AuthSession } from '../types/types';
 import { Playlist, TrackWithAudioFeature } from '../types/updatedTypes';
-import generateBpmSongs from '../lib/generateBpmSongs';
+import { generateBpmSongs } from '../lib/generateBpmSongs';
 
 interface HandleBpmGenerationProps {
   lowBpm: string;

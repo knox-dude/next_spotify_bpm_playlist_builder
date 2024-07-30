@@ -125,5 +125,4 @@ async function generateBpmSongs(
   return playlistTracks;
 }
 
-export default generateBpmSongs;
 export { chunkArray, keepSongsInCorrectBpmRange, generateBpmSongs };
