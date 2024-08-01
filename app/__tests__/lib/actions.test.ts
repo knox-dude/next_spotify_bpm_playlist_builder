@@ -209,13 +209,13 @@ describe('Spotify API functions', () => {
     );
   });
 
-  test('addSongsToPlaylist returns null if no session', async () => {
+  test('addSongsToPlaylist returns nothing if no session', async () => {
     const response = await addSongsToPlaylist(
       null as unknown as AuthSession,
       'test_playlist',
       ['track1'],
     );
-    expect(response).toBeNull();
+    expect(response).toEqual([]);
   });
 
   test('getTopItems fetches top items based on type', async () => {
