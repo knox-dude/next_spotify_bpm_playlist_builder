@@ -17,7 +17,7 @@ function ResultSong({ track }: ResultSongProps) {
       className="flex items-center gap-4 w-full"
       onClick={() => toggleSong(track)}
     >
-      {track.album.images.length > 0 ? (
+      {track.album.images && track.album.images.length > 0 ? (
         <Image
           src={track.album.images[0].url}
           alt={track.name}

@@ -56,22 +56,26 @@ function ResultPlaylist({ playlist, tracks }: ResultPlaylistProps) {
         <div className="flex justify-end items-center">
           {checked ? (
             <FaCheckSquare
+              aria-label="checkbox-checked"
               style={{ width: 30, height: 30 }}
               onClick={(e) => selectPlaylist(e)}
             />
           ) : (
             <FaSquare
+              aria-label="checkbox-unchecked"
               style={{ width: 30, height: 30 }}
               onClick={(e) => selectPlaylist(e)}
             />
           )}
           {expanded ? (
             <MdExpandLess
+              aria-label="expand-less"
               className="self-center"
               style={{ width: 50, height: 50 }}
             />
           ) : (
             <MdExpandMore
+              aria-label="expand-more"
               className="self-center"
               style={{ width: 50, height: 50 }}
             />
