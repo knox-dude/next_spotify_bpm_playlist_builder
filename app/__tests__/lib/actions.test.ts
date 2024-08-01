@@ -198,11 +198,11 @@ describe('Spotify API functions', () => {
       }),
     );
 
-    const response = await addSongsToPlaylist(
+    const response = (await addSongsToPlaylist(
       mockSession,
       'test_playlist',
       trackIds,
-    );
+    )) as Response[];
     expect(response).toHaveLength(2);
     response.forEach((res: Response) =>
       expect(res).toEqual({ snapshot_id: 'snapshot_id' }),
