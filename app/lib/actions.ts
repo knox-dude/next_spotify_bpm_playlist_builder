@@ -48,9 +48,9 @@ export const addSongsToPlaylist = async (
   session: AuthSession,
   playlistId: string,
   trackIds: string[],
-): Promise<any[]> => {
+): Promise<any> => {
   if (!session) {
-    return [];
+    return null;
   }
 
   const addTracks = async (ids: string[]) => {
