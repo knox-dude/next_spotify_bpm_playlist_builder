@@ -2,10 +2,10 @@ import {
   chunkArray,
   keepSongsInCorrectBpmRange,
   generateBpmSongs,
-} from './generateBpmSongs';
-import * as actions from './actions';
+} from '../../lib/generateBpmSongs';
+import * as actions from '../../lib/actions';
 
-jest.mock('./actions', () => ({
+jest.mock('../../lib/actions', () => ({
   getManyTrackAnalysis: jest.fn(),
   getTrackFromPlaylistLink: jest.fn(),
   getTopItems: jest.fn(),
