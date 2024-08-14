@@ -40,7 +40,7 @@ export default function RootLayout({
         />
         <meta
           property="og:image"
-          content="https://spotify-bpm-playlist-builder.vercel.app/images/spotify_logo_linkedin_og.png"
+          content="https://wallpapers.com/images/hd/spotify-logo-green-background-d9l9aoe0nhl826ww.png"
         />
 
         {/* <!-- Twitter Meta Tags --> */}
@@ -60,7 +60,7 @@ export default function RootLayout({
         />
         <meta
           name="twitter:image"
-          content="https://spotify-bpm-playlist-builder.vercel.app/images/spotify_logo_linkedin_og.png"
+          content="https://wallpapers.com/images/hd/spotify-logo-green-background-d9l9aoe0nhl826ww.png"
         />
       </head>
       <NextAuthProvider>
