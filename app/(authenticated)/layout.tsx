@@ -20,6 +20,18 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="shortcut icon" href="/images/favicon.ico" />
+        <title>Spotify BPM Playlist Builder</title>
+        <meta property="og:title" content="Spotify BPM Playlist Builder" />
+        <meta
+          property="og:description"
+          content="BPM Playlist Builder for Spotify Users"
+        />
+        <meta property="og:image" content="/images/spotify_logo.png" />
+        <meta
+          property="og:url"
+          content="https://spotify-bpm-playlist-builder.vercel.app/"
+        />
+        <meta property="og:type" content="website" />
       </head>
       <NextAuthProvider>
         <body
