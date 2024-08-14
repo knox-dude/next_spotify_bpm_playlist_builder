@@ -19,22 +19,49 @@ export default function LoginPageLayout({
   return (
     <html lang="en">
       <head>
+        {/* <!-- HTML Meta Tags --> */}
+        <title>Spotify BPM Playlist Builder</title>
+        <meta
+          name="description"
+          content="BPM Playlist Builder for Spotify users, built with NextJS, React, and Typescript"
+        />
         <link rel="shortcut icon" href="/images/favicon.ico" />
-        <title>Spotify BPM Playlist Builder - Login</title>
-        <meta
-          property="og:title"
-          content="Spotify BPM Playlist Builder - Login"
-        />
-        <meta
-          property="og:description"
-          content="BPM Playlist Builder for Spotify Users"
-        />
-        <meta property="og:image" content="/images/spotify_logo.png" />
+
+        {/* <!-- Facebook Meta Tags --> */}
         <meta
           property="og:url"
-          content="https://spotify-bpm-playlist-builder.vercel.app/login"
+          content="https://spotify-bpm-playlist-builder.vercel.app"
         />
         <meta property="og:type" content="website" />
+        <meta property="og:title" content="Spotify BPM Playlist Builder" />
+        <meta
+          property="og:description"
+          content="BPM Playlist Builder for Spotify users, built with NextJS, React, and Typescript"
+        />
+        <meta
+          property="og:image"
+          content="https://spotify-bpm-playlist-builder.vercel.app/images/spotify_logo.png"
+        />
+
+        {/* <!-- Twitter Meta Tags --> */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          property="twitter:domain"
+          content="spotify-bpm-playlist-builder.vercel.app"
+        />
+        <meta
+          property="twitter:url"
+          content="https://spotify-bpm-playlist-builder.vercel.app"
+        />
+        <meta name="twitter:title" content="Spotify BPM Playlist Builder" />
+        <meta
+          name="twitter:description"
+          content="BPM Playlist Builder for Spotify users, built with NextJS, React, and Typescript"
+        />
+        <meta
+          name="twitter:image"
+          content="https://spotify-bpm-playlist-builder.vercel.app/images/spotify_logo.png"
+        />
       </head>
       <NextAuthProvider>
         <body className={fontFamily.className + ' text-white bg-paper-700'}>
