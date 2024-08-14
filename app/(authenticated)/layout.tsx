@@ -38,6 +38,11 @@ export default function RootLayout({
           property="og:description"
           content="BPM Playlist Builder for Spotify users, built with NextJS, React, and Typescript"
         />
+        <meta
+          property="og:image"
+          content="https://kreafolk.com/cdn/shop/articles/spotify-logo-design-history-and-evolution-kreafolk_b995ad53-7473-4492-9710-58b9e5c32ecd.jpg?v=1717725016&width=2048"
+        />
+
         {/* <!-- Twitter Meta Tags --> */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta
@@ -52,6 +57,10 @@ export default function RootLayout({
         <meta
           name="twitter:description"
           content="BPM Playlist Builder for Spotify users, built with NextJS, React, and Typescript"
+        />
+        <meta
+          name="twitter:image"
+          content="https://kreafolk.com/cdn/shop/articles/spotify-logo-design-history-and-evolution-kreafolk_b995ad53-7473-4492-9710-58b9e5c32ecd.jpg?v=1717725016&width=2048"
         />
       </head>
       <NextAuthProvider>
