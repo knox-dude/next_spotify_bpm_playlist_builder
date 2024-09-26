@@ -45,6 +45,15 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
     setCompleted,
   } = useGenerateBpmSongs(session);
 
+  const handleSignOut = async () => {
+    try {
+      // Clear session cookies for full logout - redirect to login page afterwards
+      signOut({ callbackUrl: '/login' });
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
   const handleBpmGeneration = (params: HandleBpmGenerationProps) => {
     generateSongs(params);
   };
@@ -74,7 +83,12 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
 
   return (
     <SelectedPlaylistsProvider>
-      <button className="self-center bg-paper-500 hover:bg-paper-600 text-white font-bold py-2 px-4 rounded" onClick={() => signOut()}>Sign out</button>
+      <button
+        className="self-center bg-paper-500 hover:bg-paper-600 text-white font-bold py-2 px-4 rounded"
+        onClick={handleSignOut}
+      >
+        Sign out
+      </button>
       {!generateLoading && !completed && (
         <BpmSubmitForm
           session={session}
