@@ -7,7 +7,7 @@ import Image from 'next/image';
 
 export default function Login() {
   const handleLogin = () => {
-    signIn('spotify', { callbackUrl: 'http://localhost:3000' });
+    signIn('spotify', { callbackUrl: '/' });
   };
 
   return (
@@ -29,7 +29,9 @@ export default function Login() {
           Use these credentials to experience the app:
         </p>
 
-        <p className='font-bold text-slate-400'>Username, Password (Copy These Now!)</p>
+        <p className="font-bold text-slate-400">
+          Username, Password (Copy These Now!)
+        </p>
         <p>spotifybpmtest@gmail.com</p>
         <p>TestingPassword!NotSafe!</p>
       </div>
