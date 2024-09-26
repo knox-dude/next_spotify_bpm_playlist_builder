@@ -11,6 +11,10 @@ Spotify BPM Playlist Builder is a web app that lets users build playlists based 
 - Display all tracks from chosen playlists that match BPM range
 - Create new playlists with songs that match BPM range
 
+## To Do
+
+- Make login/authentication work for Google, Facebook, and Apple
+
 ## Run Locally
 
 Clone the project
