@@ -1,11 +1,10 @@
 // Disclaimer: Code partially taken from Next-Spotify-V2 (https://github.com/ankitk26/Next-Spotify-v2)
 
-
-import { NextAuthOptions } from "next-auth";
-import SpotifyProvider from "next-auth/providers/spotify";
+import { NextAuthOptions } from 'next-auth';
+import SpotifyProvider from 'next-auth/providers/spotify';
 
 const scope =
-  "user-read-recently-played user-read-playback-state user-top-read user-modify-playback-state user-read-currently-playing user-follow-read playlist-read-private user-read-email user-read-private user-library-read playlist-read-collaborative playlist-modify-public playlist-modify-private";
+  'user-read-recently-played user-read-playback-state user-top-read user-modify-playback-state user-read-currently-playing user-follow-read playlist-read-private user-read-email user-read-private user-library-read playlist-read-collaborative playlist-modify-public playlist-modify-private';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -13,7 +12,7 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.SPOTIFY_CLIENT_ID as string,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET as string,
       authorization: {
-        params: { scope },
+        params: { scope, show_dialog: true },
       },
     }),
   ],
@@ -33,6 +32,6 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: "/login",
+    signIn: '/login',
   },
 };
