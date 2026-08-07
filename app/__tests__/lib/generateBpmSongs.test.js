@@ -4,23 +4,27 @@ import {
   generateBpmSongs,
 } from '../../lib/generateBpmSongs';
 import * as actions from '../../lib/actions';
+import * as bpm from '../../lib/bpm';
 
 jest.mock('../../lib/actions', () => ({
-  getManyTrackAnalysis: jest.fn(),
   getTrackFromPlaylistLink: jest.fn(),
+  getAllUserSavedTracks: jest.fn(),
   getTopItems: jest.fn(),
-  keepSongsInCorrectBpmRange: jest.fn(),
+}));
+
+jest.mock('../../lib/bpm', () => ({
+  getTempos: jest.fn(),
 }));
 
 const mockAnalysis = [
-  { id: '1', tempo: 110 },
-  { id: '2', tempo: 90 },
-  { id: '3', tempo: 120 },
-  { id: '4', tempo: 100 },
-  { id: '5', tempo: 50 },
-  { id: '6', tempo: 40 },
-  { id: '7', tempo: 200 },
-  { id: '8', tempo: 220 },
+  { id: '1', tempo: 110, source: 'reccobeats' },
+  { id: '2', tempo: 90, source: 'reccobeats' },
+  { id: '3', tempo: 120, source: 'reccobeats' },
+  { id: '4', tempo: 100, source: 'reccobeats' },
+  { id: '5', tempo: 50, source: 'deezer' },
+  { id: '6', tempo: 40, source: 'deezer' },
+  { id: '7', tempo: 200, source: 'reccobeats' },
+  { id: '8', tempo: 220, source: 'reccobeats' },
 ];
 const mockSongs = [
   { id: '1', name: 'Song 1' },
@@ -72,7 +76,7 @@ describe('keepSongsInCorrectBpmRange', () => {
   });
 
   it('should filter songs within the BPM range', async () => {
-    actions.getManyTrackAnalysis.mockResolvedValue(mockAnalysis);
+    bpm.getTempos.mockResolvedValue(mockAnalysis);
 
     const result = await keepSongsInCorrectBpmRange(
       100,
@@ -91,7 +95,7 @@ describe('keepSongsInCorrectBpmRange', () => {
   });
 
   it('should handle double speed songs', async () => {
-    actions.getManyTrackAnalysis.mockResolvedValue(mockAnalysis);
+    bpm.getTempos.mockResolvedValue(mockAnalysis);
 
     const result = await keepSongsInCorrectBpmRange(
       100,
@@ -106,7 +110,7 @@ describe('keepSongsInCorrectBpmRange', () => {
   });
 
   it('should handle half speed songs', async () => {
-    actions.getManyTrackAnalysis.mockResolvedValue(mockAnalysis);
+    bpm.getTempos.mockResolvedValue(mockAnalysis);
 
     const result = await keepSongsInCorrectBpmRange(
       100,
@@ -121,7 +125,7 @@ describe('keepSongsInCorrectBpmRange', () => {
   });
 
   it('should handle empty analysis', async () => {
-    actions.getManyTrackAnalysis.mockResolvedValue([]);
+    bpm.getTempos.mockResolvedValue([]);
 
     const result = await keepSongsInCorrectBpmRange(
       100,
@@ -156,7 +160,7 @@ describe('generateBpmSongs', () => {
   });
 
   it('should generate BPM songs within the range', async () => {
-    actions.getManyTrackAnalysis.mockResolvedValue(mockAnalysis);
+    bpm.getTempos.mockResolvedValue(mockAnalysis);
     actions.getTrackFromPlaylistLink.mockResolvedValue(mockPlaylistedSongs);
 
     const result = await generateBpmSongs(
@@ -184,7 +188,7 @@ describe('generateBpmSongs', () => {
       },
     };
     actions.getTrackFromPlaylistLink.mockResolvedValue([]);
-    actions.getManyTrackAnalysis.mockResolvedValue([]);
+    bpm.getTempos.mockResolvedValue([]);
 
     const result = await generateBpmSongs(
       100,

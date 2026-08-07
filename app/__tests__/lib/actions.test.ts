@@ -5,12 +5,10 @@ import {
   getAllUserLikedPlaylists,
   getTrackById,
   getTrackFromPlaylistLink,
-  getTrackAnalysis,
-  getManyTrackAnalysis,
+  getAllUserSavedTracks,
 } from '../../lib/actions';
 import {
   Track,
-  AudioFeatures,
   PlaylistedTrack,
   SimplifiedPlaylist,
 } from '../../types/updatedTypes';
@@ -266,32 +264,36 @@ describe('Spotify API functions', () => {
     expect(response).toEqual(mockTracks);
   });
 
-  test('getTrackAnalysis fetches track analysis by id', async () => {
-    const mockAudioFeatures: AudioFeatures = {
-      id: 'track1',
-      danceability: 0.8,
-    } as AudioFeatures;
+  // getTrackAnalysis / getManyTrackAnalysis were removed along with Spotify's
+  // deprecated /audio-features endpoint. Tempo lookups are covered by
+  // __tests__/lib/bpm.test.ts instead.
 
-    fetch.mockResponse(JSON.stringify(mockAudioFeatures));
-
-    const response = await getTrackAnalysis(mockSession, 'track1');
-    expect(response).toEqual(mockAudioFeatures);
-  });
-
-  test('getManyTrackAnalysis fetches analysis for multiple tracks', async () => {
-    const mockAudioFeatures = {
-      audio_features: [
-        { id: 'track1', danceability: 0.8 } as AudioFeatures,
-        { id: 'track2', danceability: 0.2 } as AudioFeatures,
-      ] as AudioFeatures[],
+  test('getAllUserSavedTracks pages through the user library', async () => {
+    const firstPage = {
+      items: [{ added_at: '2024-01-01', track: { id: 'track1' } }],
+      next: 'https://api.spotify.com/v1/me/tracks?offset=50&limit=50',
+    };
+    const secondPage = {
+      items: [{ added_at: '2024-01-02', track: { id: 'track2' } }],
+      next: null,
     };
 
-    fetch.mockResponse(JSON.stringify(mockAudioFeatures));
+    fetch.mockResponses(
+      [JSON.stringify(firstPage), { status: 200 }],
+      [JSON.stringify(secondPage), { status: 200 }],
+    );
 
-    const response = await getManyTrackAnalysis(mockSession, [
-      'track1',
-      'track2',
-    ]);
-    expect(response).toEqual(mockAudioFeatures.audio_features);
+    const response = await getAllUserSavedTracks(mockSession);
+    expect(response).toHaveLength(2);
+    expect(response.map((item) => item.track.id)).toEqual(['track1', 'track2']);
+  });
+
+  test('addSongsToPlaylist does not mutate the caller array', async () => {
+    fetch.mockResponse(JSON.stringify({ snapshot_id: 'abc' }));
+
+    const trackIds = ['track1', 'track2', 'track3'];
+    await addSongsToPlaylist(mockSession, 'playlist1', trackIds);
+
+    expect(trackIds).toEqual(['track1', 'track2', 'track3']);
   });
 });

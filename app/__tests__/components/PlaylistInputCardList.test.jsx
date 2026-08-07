@@ -111,7 +111,21 @@ describe('PlaylistInputCardList', () => {
       fireEvent.click(selectAllButton);
     });
 
-    expect(selectAllPlaylists).toHaveBeenCalledWith(mockPlaylists);
+    // Liked Songs is a synthetic entry prepended to the user's real playlists.
+    expect(selectAllPlaylists).toHaveBeenCalledWith([
+      expect.objectContaining({ id: '__liked_songs__', name: 'Liked Songs' }),
+      ...mockPlaylists,
+    ]);
+  });
+
+  test('offers Liked Songs as a selectable source', async () => {
+    await act(async () => {
+      render(<PlaylistInputCardList session={mockSession} />);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Liked Songs')).toBeInTheDocument();
+    });
   });
 
   test('clears all selected playlists when "Select None" button is clicked', async () => {

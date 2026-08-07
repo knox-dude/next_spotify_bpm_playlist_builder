@@ -4,10 +4,36 @@ import { AuthSession } from '../types/types';
 import {
   PlaylistedTrack,
   Track,
-  AudioFeatures,
+  SavedTrack,
   SimplifiedPlaylist,
 } from '../types/updatedTypes';
 import { customGet } from '../utils/serverUtils';
+
+/**
+ * Walks a Spotify paging object to the end, collecting every page's items.
+ *
+ * @param {AuthSession} session - The session object containing the user's authentication information.
+ * @param {string} firstUrl - The URL of the first page.
+ * @return {Promise<any[]>} A promise that resolves to every item across all pages.
+ */
+const collectAllPages = async (
+  session: AuthSession,
+  firstUrl: string,
+): Promise<any[]> => {
+  const items: any[] = [];
+  let currUrl: string | null = firstUrl;
+
+  while (currUrl) {
+    const page = await customGet(currUrl, session);
+    if (!page?.items) {
+      break;
+    }
+    items.push(...page.items);
+    currUrl = page.next ?? null;
+  }
+
+  return items;
+};
 
 /**
  * Creates a new playlist on Spotify using the provided session and name.
@@ -28,6 +54,7 @@ export const createPlaylist = async (
     {
       headers: {
         Authorization: `Bearer ${session.user.accessToken}`,
+        'Content-Type': 'application/json',
       },
       method: 'POST',
       body: JSON.stringify({ name }),
@@ -60,6 +87,7 @@ export const addSongsToPlaylist = async (
       {
         headers: {
           Authorization: `Bearer ${session.user.accessToken}`,
+          'Content-Type': 'application/json',
         },
         method: 'POST',
         body: JSON.stringify({ uris: processedTrackIds }),
@@ -68,11 +96,12 @@ export const addSongsToPlaylist = async (
     return response.json();
   };
 
+  // Copy before batching - splice would otherwise empty the caller's array.
+  const remaining = [...trackIds];
   const batchSize = 100;
   const results: any[] = [];
-  while (trackIds.length > 0) {
-    const batch = trackIds.splice(0, batchSize);
-    results.push(await addTracks(batch));
+  while (remaining.length > 0) {
+    results.push(await addTracks(remaining.splice(0, batchSize)));
   }
 
   return results;
@@ -115,28 +144,31 @@ export const getTopItems = async ({
 export const getAllUserLikedPlaylists = async (
   session: AuthSession,
 ): Promise<SimplifiedPlaylist[]> => {
-  // Initial request to fetch the first 50 playlists
-  let data = await customGet(
-    'https://api.spotify.com/v1/me/playlists?limit=50',
+  const items = await collectAllPages(
     session,
+    'https://api.spotify.com/v1/me/playlists?limit=50',
   );
 
-  // Keep fetching playlists until there are no more
-  let limit = 50;
-  let currUrl = data.next;
-  while (currUrl !== null) {
-    // Fetch the next batch of playlists
-    const nextData = await customGet(currUrl, session);
-    // Append the new playlists to the existing data
-    data.items.push(...nextData.items);
-    // Increase the limit for the next request
-    limit += 50;
-    // Update the current URL for the next request
-    currUrl = nextData.next;
-  }
+  // Spotify occasionally returns null entries for playlists that have become
+  // unavailable; they would blow up sorting and rendering downstream.
+  return items.filter(Boolean);
+};
 
-  // Return the fetched playlists
-  return data.items;
+/**
+ * Fetches all of the user's saved ("Liked Songs") tracks from the Spotify API.
+ *
+ * @param {AuthSession} session - The session object containing the user's authentication information.
+ * @return {Promise<SavedTrack[]>} A promise that resolves to an array of the user's saved tracks.
+ */
+export const getAllUserSavedTracks = async (
+  session: AuthSession,
+): Promise<SavedTrack[]> => {
+  const items = await collectAllPages(
+    session,
+    'https://api.spotify.com/v1/me/tracks?limit=50',
+  );
+
+  return items.filter(Boolean);
 };
 
 /**
@@ -168,63 +200,18 @@ export const getTrackFromPlaylistLink = async (
   session: AuthSession,
   playlistLink: string,
 ): Promise<PlaylistedTrack[]> => {
-  // Fetch the first batch of tracks from the playlist
-  const data = await customGet(`${playlistLink}?limit=100`, session);
+  // `tracks.href` may already carry a query string, so append rather than assume.
+  const separator = playlistLink.includes('?') ? '&' : '?';
+  const items = await collectAllPages(
+    session,
+    `${playlistLink}${separator}limit=100`,
+  );
 
-  // Keep fetching tracks until there are no more
-  let limit = 100;
-  let currUrl = data.next;
-  while (currUrl !== null) {
-    // Fetch the next batch of tracks
-    const nextData = await customGet(currUrl, session);
-    // Append the new tracks to the existing data
-    data.items.push(...nextData.items);
-    // Increase the limit for the next request
-    limit += 100;
-    // Update the current URL for the next request
-    currUrl = nextData.next;
-  }
-
-  // Return the fetched tracks
-  return data.items;
+  return items.filter(Boolean);
 };
 
-/**
- * Fetches the audio features of a track by its ID from the Spotify API.
- *
- * @param {AuthSession} session - The session object containing the user's authentication information.
- * @param {string} trackId - The ID of the track to fetch.
- * @return {Promise<AudioFeatures>} A promise that resolves to the audio features object from the Spotify API.
- */
-export const getTrackAnalysis = async (
-  session: AuthSession,
-  trackId: string,
-): Promise<AudioFeatures> => {
-  // Construct the URL for fetching the track's audio features
-  const url = `https://api.spotify.com/v1/audio-features/${trackId}`;
-
-  // Fetch the track's audio features from the Spotify API using the customGet function
-  return customGet(url, session);
-};
-
-/**
- * Fetches the audio features of multiple tracks by their IDs from the Spotify API.
- *
- * @param {AuthSession} session - The session object containing the user's authentication information.
- * @param {string[]} trackIds - An array of track IDs to fetch.
- * @return {Promise<AudioFeatures[]>} A promise that resolves to an array of audio features objects from the Spotify API.
- */
-export const getManyTrackAnalysis = async (
-  session: AuthSession,
-  trackIds: string[],
-): Promise<AudioFeatures[]> => {
-  // Join the track IDs into a comma-separated string
-  const joinedIds = trackIds.join(',');
-
-  // Construct the URL for fetching the audio features of the tracks
-  const url = `https://api.spotify.com/v1/audio-features?ids=${joinedIds}`;
-
-  // Fetch the audio features of the tracks from the Spotify API using the customGet function
-  // and return the audio_features property of the response data
-  return customGet(url, session).then((data) => data.audio_features);
-};
+// NOTE: getTrackAnalysis / getManyTrackAnalysis used to live here, wrapping
+// Spotify's /audio-features endpoint. Spotify deprecated that endpoint on
+// 2024-11-27 and it now returns 403 for every app without pre-existing extended
+// quota access. Tempo lookups moved to ../lib/bpm, which sources BPM from
+// ReccoBeats with a Deezer-by-ISRC fallback.

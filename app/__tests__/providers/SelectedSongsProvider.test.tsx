@@ -4,22 +4,23 @@ import {
   SelectedSongsProvider,
   useSelectedSongs,
 } from '../../providers/SelectedSongsProvider';
-import { AudioFeatures, TrackWithAudioFeature } from '../../types/updatedTypes';
+import { TrackWithAudioFeature } from '../../types/updatedTypes';
+import { TempoAnalysis } from '../../lib/bpm/types';
 
-const mockSong1: TrackWithAudioFeature = {
+const mockSong1 = {
   id: '1',
   name: 'Song 1',
   analysis: {
     tempo: 120,
-  } as AudioFeatures,
-} as TrackWithAudioFeature;
-const mockSong2: TrackWithAudioFeature = {
+  } as TempoAnalysis,
+} as unknown as TrackWithAudioFeature;
+const mockSong2 = {
   id: '2',
   name: 'Song 2',
   analysis: {
     tempo: 130,
   },
-} as TrackWithAudioFeature;
+} as unknown as TrackWithAudioFeature;
 
 const TestComponent = () => {
   const { selectedSongs, toggleSong, selectSongs, clearSongs } =

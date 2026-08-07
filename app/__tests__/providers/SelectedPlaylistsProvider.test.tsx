@@ -9,8 +9,9 @@ import {
 } from '../../providers/SelectedPlaylistsProvider';
 import { Playlist } from '../../types/updatedTypes';
 
-const mockPlaylist1: Playlist = { id: '1', name: 'Playlist 1', images: [] };
-const mockPlaylist2: Playlist = { id: '2', name: 'Playlist 2', images: [] };
+// Partial stand-ins - these tests only exercise selection by id.
+const mockPlaylist1 = { id: '1', name: 'Playlist 1', images: [] } as unknown as Playlist;
+const mockPlaylist2 = { id: '2', name: 'Playlist 2', images: [] } as unknown as Playlist;
 
 const TestComponent = () => {
   const {
