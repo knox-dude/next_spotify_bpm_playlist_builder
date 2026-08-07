@@ -70,8 +70,12 @@ describe('ResultPlaylist', () => {
     // Check if the playlist name is rendered
     expect(screen.getByText('Test Playlist')).toBeInTheDocument();
 
-    // Check if the playlist image is rendered
-    expect(screen.getByAltText('Test Playlist')).toBeInTheDocument();
+    // The cover art is decorative - the playlist name is already rendered as
+    // text beside it, so the image carries an empty alt rather than repeating
+    // it to screen readers.
+    const cover = document.querySelector('img[alt=""]');
+    expect(cover).toBeInTheDocument();
+    expect(cover).toHaveAttribute('src', expect.stringContaining('placeholder'));
 
     // Check if the checkbox icon is rendered
     expect(screen.getByLabelText('checkbox-unchecked')).toBeInTheDocument();

@@ -89,7 +89,7 @@ function PlaylistInputCardList({ session }: { session: AuthSession }) {
       )}
       {!loading && !error && (
         <>
-          <div className=" flex justify-center gap-4 mb-4">
+          <div className="mb-4 flex w-full flex-wrap items-center justify-center gap-2 sm:gap-4">
             <SearchBar
               placeholder="Search for playlist"
               searchValue={searchResults}
@@ -98,21 +98,21 @@ function PlaylistInputCardList({ session }: { session: AuthSession }) {
             <button
               type="button"
               onClick={() => selectAllPlaylists(playlists)}
-              className="bg-paper-500 text-white rounded-md p-2 enabled:hover:bg-paper-600"
+              className="rounded-md bg-paper-500 p-2 text-sm text-white enabled:hover:bg-paper-600 sm:text-base"
             >
               Select All
             </button>
             <button
               type="button"
               onClick={() => clearAllPlaylists()}
-              className="bg-paper-500 text-white rounded-md p-2 enabled:hover:bg-paper-600"
+              className="rounded-md bg-paper-500 p-2 text-sm text-white enabled:hover:bg-paper-600 sm:text-base"
             >
               Select None
             </button>
           </div>
-          <div className="h-[40vh] overflow-auto w-[90vw]">
-            <div className="flex flex-col justify-center w-full">
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-4 w-full">
+          <div className="max-h-[45vh] w-full overflow-auto sm:max-h-[40vh]">
+            <div className="flex w-full flex-col justify-center">
+              <div className="grid w-full grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))] gap-2 sm:grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] sm:gap-4">
                 {renderPlaylists(searchResults).map((playlist) => (
                   <PlaylistInputCard
                     key={playlist.id}

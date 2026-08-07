@@ -7,7 +7,12 @@ interface CheckboxProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const Checkbox: React.FC<CheckboxProps> = ({ label, checked, hint, onChange }) => {
+const Checkbox: React.FC<CheckboxProps> = ({
+  label,
+  checked,
+  hint,
+  onChange,
+}) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -16,12 +21,21 @@ const Checkbox: React.FC<CheckboxProps> = ({ label, checked, hint, onChange }) =
       onMouseOver={() => setIsHovered(true)}
       onMouseOut={() => setIsHovered(false)}
     >
-      <label className="flex items-center space-x-2">
-        <input type="checkbox" checked={checked} onChange={onChange} className="form-checkbox" />
-        <span>{label}</span>
+      {/* `title` carries the hint on touch devices, which never hover. */}
+      <label
+        className="flex cursor-pointer items-center space-x-2 py-1"
+        title={hint}
+      >
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={onChange}
+          className="form-checkbox h-4 w-4 shrink-0 accent-primary"
+        />
+        <span className="text-sm sm:text-base">{label}</span>
       </label>
       {isHovered && (
-        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-32 bg-gray-700 text-white text-center text-sm rounded-md py-1 opacity-90">
+        <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden w-32 -translate-x-1/2 transform rounded-md bg-gray-700 py-1 text-center text-sm text-white opacity-90 sm:block">
           {hint}
         </span>
       )}

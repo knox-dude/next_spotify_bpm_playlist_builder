@@ -36,48 +36,48 @@ function ResultPlaylist({ playlist, tracks }: ResultPlaylistProps) {
   return (
     <div className="flex flex-col w-full mb-4">
       <div
-        className="flex w-full cursor-pointer bg-paper-500 p-2 rounded-md justify-between"
+        className="flex w-full cursor-pointer justify-between gap-2 rounded-md bg-paper-500 p-2"
         onClick={() => setExpanded((prev) => !prev)}
       >
-        <div className="flex justify-start gap-2 items-center">
+        <div className="flex min-w-0 items-center justify-start gap-2">
           {playlist.images && playlist.images.length > 0 ? (
             <Image
               src={playlist.images[0].url}
-              alt={playlist.name}
+              alt=""
               width={72}
               height={72}
-              className="object-cover h-full rounded-tl-md rounded-bl-md aspect-square"
+              className="aspect-square h-12 w-12 shrink-0 rounded-md object-cover sm:h-[72px] sm:w-[72px]"
             />
           ) : (
-            <Album size={72} />
+            <Album className="h-12 w-12 shrink-0 sm:h-[72px] sm:w-[72px]" />
           )}
-          <h2 className="font-bold text-lg self-center">{playlist.name}</h2>
+          <h2 className="min-w-0 truncate self-center text-base font-bold sm:text-lg">
+            {playlist.name}
+          </h2>
         </div>
-        <div className="flex justify-end items-center">
+        <div className="flex shrink-0 items-center justify-end">
           {checked ? (
             <FaCheckSquare
               aria-label="checkbox-checked"
-              style={{ width: 30, height: 30 }}
+              className="h-6 w-6 sm:h-[30px] sm:w-[30px]"
               onClick={(e) => selectPlaylist(e)}
             />
           ) : (
             <FaSquare
               aria-label="checkbox-unchecked"
-              style={{ width: 30, height: 30 }}
+              className="h-6 w-6 sm:h-[30px] sm:w-[30px]"
               onClick={(e) => selectPlaylist(e)}
             />
           )}
           {expanded ? (
             <MdExpandLess
               aria-label="expand-less"
-              className="self-center"
-              style={{ width: 50, height: 50 }}
+              className="h-9 w-9 self-center sm:h-[50px] sm:w-[50px]"
             />
           ) : (
             <MdExpandMore
               aria-label="expand-more"
-              className="self-center"
-              style={{ width: 50, height: 50 }}
+              className="h-9 w-9 self-center sm:h-[50px] sm:w-[50px]"
             />
           )}
         </div>

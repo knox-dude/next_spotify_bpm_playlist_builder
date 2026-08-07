@@ -29,7 +29,7 @@ const DebouncedSearchBar: React.FC<SearchBarProps> = ({ placeholder, searchValue
       value={inputValue}
       onChange={handleChange}
       placeholder={placeholder}
-      className="pl-2 border border-gray-300 text-gray-600 rounded"
+      className="w-full min-w-0 rounded border border-gray-300 p-2 text-gray-600 sm:w-auto"
     />
   );
 };
