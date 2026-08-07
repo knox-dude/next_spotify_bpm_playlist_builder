@@ -8,12 +8,58 @@ Spotify BPM Playlist Builder is a web app that lets users build playlists based 
 
 - Spotify OAuth for verification
 - View all the playlists created or followed by the user
-- Display all tracks from chosen playlists that match BPM range
+- Scan Liked Songs and your top tracks (last 4 weeks / 6 months / year)
+- Display all tracks from chosen sources that match BPM range
 - Create new playlists with songs that match BPM range
+
+## Where BPM data comes from
+
+Spotify **deprecated the `/audio-features` endpoint on 2024-11-27**. It now
+returns `403` for every app that didn't already hold extended quota access, and
+there is still no official replacement. That endpoint was the app's only source
+of tempo, so BPM is now sourced from third parties in two passes:
+
+| Pass | Source | Keyed on | Auth | Notes |
+| --- | --- | --- | --- | --- |
+| 1 | [ReccoBeats](https://reccobeats.com) | Spotify track id | none | 40 ids/request |
+| 2 | [Deezer](https://developers.deezer.com/api) | ISRC | none | only for pass-1 misses |
+
+**Neither provider requires an account or an API key**, so there is nothing extra
+to sign up for.
+
+Measured against 276 real Spotify tracks spanning genres and eras, pass 1 alone
+resolves ~79% and the Deezer fallback lifts that to ~85%. That sample was
+deliberately weighted toward obscure catalogue entries; on a realistic playlist
+(a 117-track running playlist) the combined figure was ~81%, with 15 of the 95
+hits coming from the Deezer fallback. Tracks with no tempo from either provider
+are simply left out of the results.
+
+Tempos are cached per server instance and de-duplicated across playlists, so a
+song appearing in ten playlists is looked up once.
+
+### If a provider breaks
+
+The pipeline depends on undocumented behaviour of a free API (notably that
+ReccoBeats echoes the Spotify id back in its `href` field). There's an opt-in
+contract test for exactly that:
+
+```bash
+RUN_LIVE_BPM_TESTS=1 npx jest bpm.live
+```
+
+Adding another provider means writing one function that returns a `TempoAnalysis`
+and slotting it into the cascade in `app/lib/bpm/index.ts`.
 
 ## To Do
 
 - Make login/authentication work for Google, Facebook, and Apple
+- **Apple Music support.** Apple's MusicKit API still exposes tempo directly, so
+  it would be a first-class BPM source rather than a fallback. It needs an Apple
+  Developer account ($99/yr) and a MusicKit private key, plus a separate
+  auth flow — the `app/lib/bpm` provider cascade is the seam to plug it into.
+- Recover more of the ~15-20% of tracks with no tempo (searching Spotify by ISRC
+  for alternate track ids and re-querying ReccoBeats was measured at roughly
+  +2pp — real, but it costs one extra Spotify search per missing track)
 
 ## Run Locally
 
@@ -74,10 +120,11 @@ openssl rand -base64 32
 
 ## To-do features
 
-- Implement functionality for top songs (not high priority since most people can only use the Test account)
-- Handle duplicate songs that are present in multiple playlists
-- Add a logout button (lol, it's actually not that necessary)
+- ~~Implement functionality for top songs~~ (done — selectable as top tracks over three time ranges)
+- ~~Handle duplicate songs that are present in multiple playlists~~ (done — de-duplicated before lookup)
+- ~~Add a logout button~~ (done)
 - Add a mobile layout (grrrrrr I know, I know, it's necessary... but at what cost to my sanity...)
+- Show which provider a BPM came from, so odd-looking values can be sanity-checked
 
 ## Disclaimer
 
