@@ -206,3 +206,40 @@ describe('generateBpmSongs', () => {
     expect(result.get(emptyPlaylist)).toBeUndefined();
   });
 });
+
+describe('tempo lookup chunking', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('splits large selections across multiple provider calls', async () => {
+    // 250 tracks must not go out as one long-running server action - hosts
+    // cap function duration (Vercel Hobby at 10s).
+    const many = Array.from({ length: 250 }, (_, i) => ({
+      id: `big${i}`,
+      name: `Song ${i}`,
+    }));
+    actions.getTrackFromPlaylistLink.mockResolvedValue(
+      many.map((track) => ({ track })),
+    );
+    bpm.getTempos.mockResolvedValue([]);
+
+    await generateBpmSongs(
+      100,
+      120,
+      false,
+      false,
+      false,
+      false,
+      false,
+      mockSession,
+      [{ id: '1', name: 'Big Playlist', tracks: { total: 250 } }],
+    );
+
+    // 250 tracks at 120 per call => 3 calls.
+    expect(bpm.getTempos).toHaveBeenCalledTimes(3);
+    bpm.getTempos.mock.calls.forEach(([batch]) => {
+      expect(batch.length).toBeLessThanOrEqual(120);
+    });
+  });
+});

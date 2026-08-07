@@ -108,6 +108,17 @@ async function keepSongsInCorrectBpmRange(
 }
 
 /**
+ * How many tracks to resolve per call into the tempo provider.
+ *
+ * getTempos runs server-side, so one call is one serverless invocation. Hosts
+ * cap those: Vercel's Hobby tier kills a function at 10s. Resolving a whole
+ * library in a single call would blow straight past that, so the work is split
+ * into chunks that each finish in a couple of seconds. Measured at ~2.5s for
+ * 117 tracks including the Deezer fallback.
+ */
+const TEMPO_LOOKUP_CHUNK = 120;
+
+/**
  * Resolves tempos for a set of tracks, keyed by Spotify track id.
  *
  * @param {Track[]} songs - The tracks to resolve.
@@ -116,14 +127,24 @@ async function keepSongsInCorrectBpmRange(
 async function lookupTempos(
   songs: Track[],
 ): Promise<Map<string, TempoAnalysis>> {
-  const analyses = await getTempos(
-    songs.map((song) => ({
-      id: song.id,
-      isrc: song.external_ids?.isrc ?? null,
-    })),
-  );
+  const tempos = new Map<string, TempoAnalysis>();
 
-  return new Map(analyses.map((analysis) => [analysis.id, analysis]));
+  // Sequential rather than parallel: it keeps a big library from firing dozens
+  // of concurrent requests at two free APIs.
+  for (const chunk of chunkArray(songs, TEMPO_LOOKUP_CHUNK)) {
+    const analyses = await getTempos(
+      chunk.map((song) => ({
+        id: song.id,
+        isrc: song.external_ids?.isrc ?? null,
+      })),
+    );
+
+    for (const analysis of analyses) {
+      tempos.set(analysis.id, analysis);
+    }
+  }
+
+  return tempos;
 }
 
 /**
