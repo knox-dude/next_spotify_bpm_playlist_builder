@@ -12,18 +12,20 @@ const BpmInputSection: React.FC<BpmInputSectionProps> = ({
   highBpm,
   handleBpmInputChange,
 }) => (
-  <div className="items-center">
+  <div className="flex w-full flex-col items-stretch sm:w-auto sm:flex-row sm:items-center">
     <TextInput
       label="lowBpm"
       value={lowBpm}
       placeholder="Enter lower BPM"
       onChange={handleBpmInputChange}
+      inputMode="numeric"
     />
     <TextInput
       label="highBpm"
       value={highBpm}
       placeholder="Enter higher BPM"
       onChange={handleBpmInputChange}
+      inputMode="numeric"
     />
   </div>
 );

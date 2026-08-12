@@ -84,7 +84,7 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
   return (
     <SelectedPlaylistsProvider>
       <button
-        className="self-center bg-paper-500 hover:bg-paper-600 text-white font-bold py-2 px-4 rounded"
+        className="self-center rounded bg-paper-500 px-4 py-2 text-sm font-bold text-white hover:bg-paper-600 sm:text-base"
         onClick={handleSignOut}
       >
         Sign out
@@ -96,30 +96,30 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
         />
       )}
       {generateLoading && (
-        <div className="fixed inset-0 flex flex-col items-center justify-center bg-gray-800 bg-opacity-75">
+        <div className="fixed inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-gray-800 bg-opacity-75 px-6 text-center">
           <Audio color="#1DB954" height={80} width={80} />
-          <p className="font-bold text-2xl text-gray-400">
+          <p className="text-lg font-bold text-gray-400 sm:text-2xl">
             Please sit back and relax, this could take a while...
           </p>
         </div>
       )}
       <SelectedSongsProvider>
         {!generateLoading && completed && (
-          <div className="w-11/12 self-center">
-            <div className="flex flex-col gap-4 justify-center m-2 w-100vw">
+          <div className="w-full self-center">
+            <div className="m-2 flex flex-col justify-center gap-4">
               <button
                 type="button"
                 onClick={() => {
                   setCompleted(false);
                 }}
-                className="w-1/3 self-center bg-paper-500 mb-4 text-white rounded-md p-2 disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600"
+                className="mb-4 w-full self-center rounded-md bg-paper-500 p-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600 sm:w-1/3 sm:text-base"
               >
                 Back to Playlist Builder
               </button>
             </div>
 
-            <div className="flex items-center align-middle w-11/12 justify-center text-center">
-              <div className="h-[60vh] overflow-auto w-full align-middle">
+            <div className="flex w-full items-center justify-center text-center align-middle">
+              <div className="max-h-[60vh] w-full overflow-auto align-middle">
                 {Array.from(results.entries()).some(
                   ([_, tracks]) => tracks.length > 0,
                 ) ? (
@@ -141,9 +141,9 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
               </div>
             </div>
 
-            <div className="flex flex-col gap-4 justify-center m-2 w-100vw">
+            <div className="m-2 flex flex-col justify-center gap-4">
               <TextInput
-                className={'self-center w-1/3'}
+                className={'w-full self-center sm:w-1/3'}
                 label="playlist-name"
                 value={newPlaylistName}
                 placeholder={'playlist name'}

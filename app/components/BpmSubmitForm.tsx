@@ -90,9 +90,9 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="self-center flex flex-col w-11/12 justify-center items-center"
+      className="flex w-full flex-col items-center justify-center self-center"
     >
-      <div className="self-center flex justify-around w-11/12 text-gray-400 font-bold text-2xl">
+      <div className="flex w-full justify-center self-center text-xl font-bold text-gray-400 sm:justify-around sm:text-2xl">
         <p>Choose BPM range </p>
       </div>
       <BpmInputSection
@@ -101,7 +101,7 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({
         handleBpmInputChange={handleBpmInputChange}
       />
       <hr className="h-px w-full my-2 bg-gray-500 border-0 z-10"></hr>
-      <div className="self-center flex justify-around w-11/12 text-gray-400 font-bold text-2xl">
+      <div className="flex w-full justify-center self-center text-xl font-bold text-gray-400 sm:justify-around sm:text-2xl">
         <p>Choose options </p>
       </div>
       <OptionCheckboxes

@@ -22,8 +22,11 @@ const PlaylistInputCard: React.FC<PlaylistInputCardProps> = ({
   };
 
   return (
-    <div
-      className={`relative flex flex-col items-center justify-between w-30 h-30 bg-gray-200 rounded-md cursor-pointer transition-colors duration-300 p-2 ${
+    <button
+      type="button"
+      aria-pressed={selected}
+      aria-label={playlist.name}
+      className={`relative flex w-full cursor-pointer flex-col items-center justify-between rounded-md p-2 transition-colors duration-300 ${
         selected ? 'bg-gray-400' : 'bg-gray-200'
       }`}
       onClick={handleClick}
@@ -32,30 +35,36 @@ const PlaylistInputCard: React.FC<PlaylistInputCardProps> = ({
     >
       {playlist.images && playlist.images.length > 0 ? (
         <Image
-          src={playlist.images.length > 0 ? playlist.images[0].url : ''}
-          alt={playlist.name}
-          className="w-full h-28 object-cover rounded-md transition-opacity duration-300"
+          src={playlist.images[0].url}
+          alt=""
+          className="aspect-square w-full rounded-md object-cover transition-opacity duration-300"
           width={120}
           height={120}
         />
       ) : (
-        <Album size={20} />
+        <span className="flex aspect-square w-full items-center justify-center rounded-md bg-paper-500">
+          <Album size={20} />
+        </span>
       )}
 
-      <p className="mt-2 text-base text-paper-400 font-bold truncate w-full text-center">
+      <p className="mt-2 w-full truncate text-center text-xs font-bold text-paper-400 sm:text-base">
         {playlist.name}
       </p>
+
+      {/* Hover label, for names too long to fit the tile. Desktop only -
+          touch devices never hover, and the name is already shown above. */}
       {isHovered && (
-        <div className="absolute bottom-full left-1/2 transform translate-y-8 -translate-x-1/2 mb-2 w-64 bg-gray-700 text-white text-center text-sm rounded-md py-1 opacity-90">
+        <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden w-64 -translate-x-1/2 translate-y-8 transform rounded-md bg-gray-700 py-1 text-center text-sm text-white opacity-90 sm:block">
           {playlist.name}
-        </div>
+        </span>
       )}
+
       {selected && (
-        <div className="absolute text-green-600">
-          <MdOutlineCheckCircle size={100} />
-        </div>
+        <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-green-600">
+          <MdOutlineCheckCircle className="h-1/2 w-1/2" />
+        </span>
       )}
-    </div>
+    </button>
   );
 };
 

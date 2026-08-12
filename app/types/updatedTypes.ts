@@ -1,5 +1,7 @@
 // Disclaimer: Code taken from Spotify-WebApi-Ts-SDK (https://github.com/spotify/spotify-web-api-ts-sdk)
 
+import { TempoAnalysis } from '../lib/bpm/types';
+
 // Configuration types
 
 export type RequestImplementation = (
@@ -1260,6 +1262,13 @@ export interface Queue {
   queue: TrackItem[];
 }
 
+/**
+ * A Spotify track paired with the tempo we resolved for it.
+ *
+ * `analysis` used to be Spotify's full AudioFeatures object. Since Spotify
+ * deprecated /audio-features, tempo comes from a third-party provider and this
+ * is the only feature we still have, so the shape is deliberately narrow.
+ */
 export interface TrackWithAudioFeature extends Track {
-  analysis: AudioFeatures;
+  analysis: TempoAnalysis;
 }

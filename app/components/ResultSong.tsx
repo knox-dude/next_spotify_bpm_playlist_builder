@@ -11,31 +11,40 @@ interface ResultSongProps {
 
 function ResultSong({ track }: ResultSongProps) {
   const { selectedSongs, toggleSong } = useSelectedSongs();
+  const isSelected = selectedSongs.some((p) => p.id === track.id);
 
   return (
     <div
-      className="flex items-center gap-4 w-full"
+      className="flex w-full cursor-pointer items-center gap-2 sm:gap-4"
       onClick={() => toggleSong(track)}
     >
-      {track.album.images && track.album.images.length > 0 ? (
+      {track.album?.images && track.album.images.length > 0 ? (
         <Image
           src={track.album.images[0].url}
-          alt={track.name}
+          alt=""
           width={72}
           height={72}
-          className="object-cover h-full rounded-tl-md rounded-bl-md aspect-square"
+          className="aspect-square h-12 w-12 shrink-0 rounded-l-md object-cover sm:h-[72px] sm:w-[72px]"
         />
       ) : (
-        <Album size={20} />
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center sm:h-[72px] sm:w-[72px]">
+          <Album size={20} />
+        </span>
       )}
-      <h3 className="font-semibold truncate w-full">{track.name}</h3>
-      <h3 className="font-semibold truncate w-full">
-        BPM: {Math.round(track.analysis.tempo)}
+
+      {/* min-w-0 lets the title truncate instead of pushing the BPM off-screen. */}
+      <h3 className="min-w-0 flex-1 truncate text-left text-sm font-semibold sm:text-base">
+        {track.name}
       </h3>
-      {selectedSongs.some((p) => p.id === track.id) ? (
-        <FaCheckSquare style={{ width: 50, height: 50 }} />
+
+      <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-xs font-bold text-primary sm:text-sm">
+        {Math.round(track.analysis.tempo)} BPM
+      </span>
+
+      {isSelected ? (
+        <FaCheckSquare className="h-7 w-7 shrink-0 sm:h-[50px] sm:w-[50px]" />
       ) : (
-        <FaSquare style={{ width: 50, height: 50 }} />
+        <FaSquare className="h-7 w-7 shrink-0 sm:h-[50px] sm:w-[50px]" />
       )}
     </div>
   );

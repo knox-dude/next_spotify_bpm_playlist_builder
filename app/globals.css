@@ -24,4 +24,43 @@
   h1 {
     @apply text-2xl inline-block font-bold mb-5;
   }
+
+  /* Stops iOS Safari zooming the page when a text input is focused, which it
+     does for any font-size below 16px. */
+  @media (max-width: 640px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+}
+
+/* A beat at 128 BPM (60 / 128 = 0.469s), used on the login screen. It's the
+   one piece of chrome that states what the app is about without words. */
+@keyframes bpm-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  12% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
+  60%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+}
+
+.animate-bpm {
+  animation: bpm-pulse 0.469s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-bpm {
+    animation: none;
+    opacity: 1;
+  }
 }

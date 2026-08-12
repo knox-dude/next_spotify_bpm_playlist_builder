@@ -8,7 +8,7 @@ interface PlaylistSelectionProps {
 
 const PlaylistSelection: React.FC<PlaylistSelectionProps> = ({ session }) => (
   <>
-    <div className="self-center flex justify-around w-11/12 text-gray-400 font-bold text-2xl mb-2">
+    <div className="mb-2 flex w-full justify-center self-center text-center text-lg font-bold text-gray-400 sm:justify-around sm:text-2xl">
       <p> Choose (click) playlists to use for the BPM song scan </p>
     </div>
     <PlaylistList session={session} />

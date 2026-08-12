@@ -27,7 +27,7 @@ const OptionCheckboxes: React.FC<OptionCheckboxesProps> = ({
   setLongTerm,
 }) => (
   <>
-    <div className="flex justify-between gap-4">
+    <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 sm:justify-between sm:gap-4">
       <Checkbox
         label="double speed"
         checked={doubleSpeed}
@@ -42,10 +42,10 @@ const OptionCheckboxes: React.FC<OptionCheckboxesProps> = ({
       />
     </div>
 
-    {/* <h2 className="self-center flex justify-around w-11/12 text-gray-400 font-bold text-xl">
+    <h2 className="mt-3 flex w-11/12 justify-center self-center text-lg font-bold text-gray-400 sm:justify-around sm:text-xl">
       Use Top Songs?
     </h2>
-    <div className="flex justify-between gap-4">
+    <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 sm:justify-between sm:gap-4">
       <Checkbox
         label="past month"
         checked={shortTerm}
@@ -64,7 +64,7 @@ const OptionCheckboxes: React.FC<OptionCheckboxesProps> = ({
         hint="Include your top songs of all time."
         onChange={(e) => setLongTerm(e.target.checked)}
       />
-    </div> */}
+    </div>
   </>
 );
 

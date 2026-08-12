@@ -12,8 +12,8 @@ export default async function Home() {
   }
 
   return (
-    <section className="flex flex-col items-start">
-      <h1 className="mb-2 text-4xl font-bold text-center self-center">
+    <section className="flex flex-col items-stretch">
+      <h1 className="mb-2 self-center text-center text-2xl font-bold sm:text-4xl">
         BPM Playlist Builder
       </h1>
       <BpmFormHolder session={session} />

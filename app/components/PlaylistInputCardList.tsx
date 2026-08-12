@@ -4,12 +4,25 @@ import SearchBar from './DebouncedSearchBar';
 import { AuthSession } from '../types/types';
 import { Playlist } from '@/app/types/updatedTypes';
 import { getAllUserLikedPlaylists } from '../lib/actions';
+import { LIKED_SONGS_ID } from '../lib/generateBpmSongs';
 import { Audio } from 'react-loader-spinner';
 import { useSelectedPlaylists } from '../providers/SelectedPlaylistsProvider';
+
+/**
+ * Liked Songs isn't a real playlist in Spotify's API, so it's presented as one
+ * here and swapped for the /me/tracks endpoint when the scan runs.
+ */
+const LIKED_SONGS_PLAYLIST = {
+  id: LIKED_SONGS_ID,
+  name: 'Liked Songs',
+  images: [{ url: '/images/liked_cover.jpeg', height: null, width: null }],
+  tracks: { href: '', total: 0 },
+} as unknown as Playlist;
 
 function PlaylistInputCardList({ session }: { session: AuthSession }) {
   const [searchResults, setSearchResults] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const {
     selectedPlaylists,
@@ -19,14 +32,34 @@ function PlaylistInputCardList({ session }: { session: AuthSession }) {
   } = useSelectedPlaylists();
 
   useEffect(() => {
+    let cancelled = false;
+
     async function getUserPlaylists() {
-      const userPlaylists = (await getAllUserLikedPlaylists(session).then(
-        (data) => data.sort((a, b) => a.name.localeCompare(b.name)),
-      )) as Playlist[];
-      setPlaylists(userPlaylists);
-      setLoading(false);
+      try {
+        const userPlaylists = (await getAllUserLikedPlaylists(session)) ?? [];
+        if (cancelled) {
+          return;
+        }
+        const sorted = [...userPlaylists].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        ) as Playlist[];
+        // Liked Songs first - it's the one nearly everybody wants to scan.
+        setPlaylists([LIKED_SONGS_PLAYLIST, ...sorted]);
+      } catch (err) {
+        if (!cancelled) {
+          setError(`Could not load your playlists: ${err}`);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     }
+
     getUserPlaylists();
+    return () => {
+      cancelled = true;
+    };
   }, [session]);
 
   const renderPlaylists = (searchResults: string) => {
@@ -49,9 +82,14 @@ function PlaylistInputCardList({ session }: { session: AuthSession }) {
           </p>
         </div>
       )}
-      {!loading && (
+      {!loading && error && (
+        <div className="flex flex-col justify-center items-center w-full h-full">
+          <p className="font-bold text-xl text-red-400">{error}</p>
+        </div>
+      )}
+      {!loading && !error && (
         <>
-          <div className=" flex justify-center gap-4 mb-4">
+          <div className="mb-4 flex w-full flex-wrap items-center justify-center gap-2 sm:gap-4">
             <SearchBar
               placeholder="Search for playlist"
               searchValue={searchResults}
@@ -60,21 +98,21 @@ function PlaylistInputCardList({ session }: { session: AuthSession }) {
             <button
               type="button"
               onClick={() => selectAllPlaylists(playlists)}
-              className="bg-paper-500 text-white rounded-md p-2 enabled:hover:bg-paper-600"
+              className="rounded-md bg-paper-500 p-2 text-sm text-white enabled:hover:bg-paper-600 sm:text-base"
             >
               Select All
             </button>
             <button
               type="button"
               onClick={() => clearAllPlaylists()}
-              className="bg-paper-500 text-white rounded-md p-2 enabled:hover:bg-paper-600"
+              className="rounded-md bg-paper-500 p-2 text-sm text-white enabled:hover:bg-paper-600 sm:text-base"
             >
               Select None
             </button>
           </div>
-          <div className="h-[40vh] overflow-auto w-[90vw]">
-            <div className="flex flex-col justify-center w-full">
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-4 w-full">
+          <div className="max-h-[45vh] w-full overflow-auto sm:max-h-[40vh]">
+            <div className="flex w-full flex-col justify-center">
+              <div className="grid w-full grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))] gap-2 sm:grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] sm:gap-4">
                 {renderPlaylists(searchResults).map((playlist) => (
                   <PlaylistInputCard
                     key={playlist.id}

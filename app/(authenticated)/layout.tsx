@@ -64,14 +64,16 @@ export default function RootLayout({
         />
       </head>
       <NextAuthProvider>
+        {/* min-h rather than a locked h-screen: on mobile the toolbar makes
+            100vh taller than the visible area, which used to clip the page. */}
         <body
           className={
             fontFamily.className +
-            ' h-screen flex flex-col overflow-hidden bg-background text-white items-stretch p-2 pb-12'
+            ' min-h-[100dvh] flex flex-col bg-background text-white items-stretch p-2 sm:p-3'
           }
         >
-          <div className="flex flex-col col-span-8 overflow-auto rounded-lg bg-paper-400">
-            <main className="mx-8 my-4">{children}</main>
+          <div className="flex flex-1 flex-col rounded-lg bg-paper-400">
+            <main className="mx-3 my-4 sm:mx-6 lg:mx-8">{children}</main>
           </div>
         </body>
       </NextAuthProvider>
