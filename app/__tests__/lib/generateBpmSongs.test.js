@@ -1,6 +1,6 @@
 import {
   chunkArray,
-  keepSongsInCorrectBpmRange,
+  matchSongsToTempos,
   generateBpmSongs,
 } from '../../lib/generateBpmSongs';
 import * as actions from '../../lib/actions';
@@ -10,6 +10,7 @@ jest.mock('../../lib/actions', () => ({
   getTrackFromPlaylistLink: jest.fn(),
   getAllUserSavedTracks: jest.fn(),
   getTopItems: jest.fn(),
+  getArtistGenres: jest.fn(),
 }));
 
 jest.mock('../../lib/bpm', () => ({
@@ -36,6 +37,9 @@ const mockSongs = [
   { id: '7', name: 'Song 7' },
   { id: '8', name: 'Song 8' },
 ];
+
+const temposById = (analyses) =>
+  new Map(analyses.map((analysis) => [analysis.id, analysis]));
 
 const now = new Date();
 const hourFromNow = now.getTime() + 60 * 60 * 1000;
@@ -68,40 +72,30 @@ describe('chunkArray', () => {
   });
 });
 
-describe('keepSongsInCorrectBpmRange', () => {
-  const chunkedSongs = [mockSongs];
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should filter songs within the BPM range', async () => {
-    bpm.getTempos.mockResolvedValue(mockAnalysis);
-
-    const result = await keepSongsInCorrectBpmRange(
+describe('matchSongsToTempos', () => {
+  it('keeps only songs inside the BPM range', () => {
+    const result = matchSongsToTempos(
+      mockSongs,
+      temposById(mockAnalysis),
       100,
       120,
-      chunkedSongs,
-      mockSession,
       false,
       false,
     );
 
     expect(result).toHaveLength(3);
-    for (let i = 0; i < result.length; i++) {
-      expect(result[i].analysis.tempo).toBeGreaterThanOrEqual(100);
-      expect(result[i].analysis.tempo).toBeLessThanOrEqual(120);
-    }
+    result.forEach((track) => {
+      expect(track.analysis.tempo).toBeGreaterThanOrEqual(100);
+      expect(track.analysis.tempo).toBeLessThanOrEqual(120);
+    });
   });
 
-  it('should handle double speed songs', async () => {
-    bpm.getTempos.mockResolvedValue(mockAnalysis);
-
-    const result = await keepSongsInCorrectBpmRange(
+  it('handles double speed songs', () => {
+    const result = matchSongsToTempos(
+      mockSongs,
+      temposById(mockAnalysis),
       100,
       120,
-      chunkedSongs,
-      mockSession,
       true,
       false,
     );
@@ -109,14 +103,12 @@ describe('keepSongsInCorrectBpmRange', () => {
     expect(result).toHaveLength(5);
   });
 
-  it('should handle half speed songs', async () => {
-    bpm.getTempos.mockResolvedValue(mockAnalysis);
-
-    const result = await keepSongsInCorrectBpmRange(
+  it('handles half speed songs', () => {
+    const result = matchSongsToTempos(
+      mockSongs,
+      temposById(mockAnalysis),
       100,
       120,
-      chunkedSongs,
-      mockSession,
       false,
       true,
     );
@@ -124,14 +116,12 @@ describe('keepSongsInCorrectBpmRange', () => {
     expect(result).toHaveLength(4);
   });
 
-  it('should handle empty analysis', async () => {
-    bpm.getTempos.mockResolvedValue([]);
-
-    const result = await keepSongsInCorrectBpmRange(
+  it('returns nothing when no tempo was resolved', () => {
+    const result = matchSongsToTempos(
+      mockSongs,
+      new Map(),
       100,
       120,
-      chunkedSongs,
-      mockSession,
       false,
       false,
     );
@@ -155,61 +145,114 @@ describe('generateBpmSongs', () => {
     },
   }));
 
+  const scan = (overrides = {}) =>
+    generateBpmSongs({
+      session: mockSession,
+      lowBpm: 100,
+      highBpm: 120,
+      playlists: [mockPlaylist],
+      ...overrides,
+    });
+
   beforeEach(() => {
     jest.clearAllMocks();
+    actions.getArtistGenres.mockResolvedValue({});
   });
 
-  it('should generate BPM songs within the range', async () => {
+  it('returns every match as one flat list, slowest first', async () => {
     bpm.getTempos.mockResolvedValue(mockAnalysis);
     actions.getTrackFromPlaylistLink.mockResolvedValue(mockPlaylistedSongs);
 
-    const result = await generateBpmSongs(
-      100,
-      120,
-      false,
-      false,
-      false,
-      false,
-      false,
-      mockSession,
-      [mockPlaylist],
-    );
+    const result = await scan();
 
-    expect(result.size).toBe(1);
-    expect(result.get(mockPlaylist)).toHaveLength(3);
+    expect(result.tracks).toHaveLength(3);
+    expect(result.tracks.map((track) => track.analysis.tempo)).toEqual([
+      100, 110, 120,
+    ]);
+    expect(result.scannedCount).toBe(8);
+    expect(result.sourceCount).toBe(1);
   });
 
-  it('should handle empty playlists', async () => {
-    const emptyPlaylist = {
-      ...mockPlaylist,
-      tracks: {
-        ...mockPlaylist.tracks,
-        total: 0,
-      },
-    };
+  it('handles empty playlists', async () => {
     actions.getTrackFromPlaylistLink.mockResolvedValue([]);
     bpm.getTempos.mockResolvedValue([]);
 
-    const result = await generateBpmSongs(
-      100,
-      120,
-      false,
-      false,
-      false,
-      false,
-      false,
-      mockSession,
-      [mockPlaylist],
-    );
+    const result = await scan();
 
-    expect(result.size).toBe(1);
-    expect(result.get(emptyPlaylist)).toBeUndefined();
+    expect(result.tracks).toEqual([]);
+    expect(result.scannedCount).toBe(0);
+  });
+
+  it('looks a song up once even when several sources contain it', async () => {
+    bpm.getTempos.mockResolvedValue(mockAnalysis);
+    actions.getTrackFromPlaylistLink.mockResolvedValue(mockPlaylistedSongs);
+
+    const result = await scan({
+      playlists: [mockPlaylist, { ...mockPlaylist, id: '2' }],
+    });
+
+    expect(result.scannedCount).toBe(8);
+    expect(result.tracks).toHaveLength(3);
+    expect(bpm.getTempos).toHaveBeenCalledTimes(1);
+    expect(bpm.getTempos.mock.calls[0][0]).toHaveLength(8);
+  });
+
+  it('attaches the primary artist genres to each match', async () => {
+    bpm.getTempos.mockResolvedValue([mockAnalysis[0]]);
+    actions.getTrackFromPlaylistLink.mockResolvedValue([
+      { track: { ...mockSongs[0], artists: [{ id: 'artist1' }] } },
+    ]);
+    actions.getArtistGenres.mockResolvedValue({ artist1: ['indie rock'] });
+
+    const result = await scan();
+
+    expect(actions.getArtistGenres).toHaveBeenCalledWith(mockSession, [
+      'artist1',
+    ]);
+    expect(result.tracks[0].genres).toEqual(['indie rock']);
+  });
+
+  it('still returns matches when the genre lookup fails', async () => {
+    bpm.getTempos.mockResolvedValue([mockAnalysis[0]]);
+    actions.getTrackFromPlaylistLink.mockResolvedValue([
+      { track: { ...mockSongs[0], artists: [{ id: 'artist1' }] } },
+    ]);
+    actions.getArtistGenres.mockRejectedValue(new Error('spotify is down'));
+
+    const result = await scan();
+
+    expect(result.tracks).toHaveLength(1);
+    expect(result.tracks[0].genres).toBeUndefined();
+  });
+
+  it('reports progress as it works', async () => {
+    bpm.getTempos.mockResolvedValue(mockAnalysis);
+    actions.getTrackFromPlaylistLink.mockResolvedValue(mockPlaylistedSongs);
+    const onProgress = jest.fn();
+
+    await scan({ onProgress });
+
+    const phases = onProgress.mock.calls.map(([progress]) => progress.phase);
+    expect(phases).toContain('sources');
+    expect(phases).toContain('tempos');
+    expect(onProgress).toHaveBeenCalledWith({
+      phase: 'sources',
+      done: 1,
+      total: 1,
+    });
+  });
+
+  it('refuses to scan nothing', async () => {
+    await expect(scan({ playlists: [] })).rejects.toThrow(
+      /No playlists or top tracks selected/,
+    );
   });
 });
 
 describe('tempo lookup chunking', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    actions.getArtistGenres.mockResolvedValue({});
   });
 
   it('splits large selections across multiple provider calls', async () => {
@@ -224,22 +267,46 @@ describe('tempo lookup chunking', () => {
     );
     bpm.getTempos.mockResolvedValue([]);
 
-    await generateBpmSongs(
-      100,
-      120,
-      false,
-      false,
-      false,
-      false,
-      false,
-      mockSession,
-      [{ id: '1', name: 'Big Playlist', tracks: { total: 250 } }],
-    );
+    await generateBpmSongs({
+      session: mockSession,
+      lowBpm: 100,
+      highBpm: 120,
+      playlists: [{ id: '1', name: 'Big Playlist', tracks: { total: 250 } }],
+    });
 
     // 250 tracks at 120 per call => 3 calls.
     expect(bpm.getTempos).toHaveBeenCalledTimes(3);
     bpm.getTempos.mock.calls.forEach(([batch]) => {
       expect(batch.length).toBeLessThanOrEqual(120);
     });
+  });
+
+  it('runs those calls concurrently rather than one after another', async () => {
+    const many = Array.from({ length: 360 }, (_, i) => ({
+      id: `big${i}`,
+      name: `Song ${i}`,
+    }));
+    actions.getTrackFromPlaylistLink.mockResolvedValue(
+      many.map((track) => ({ track })),
+    );
+
+    let inFlight = 0;
+    let peak = 0;
+    bpm.getTempos.mockImplementation(async () => {
+      inFlight += 1;
+      peak = Math.max(peak, inFlight);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      inFlight -= 1;
+      return [];
+    });
+
+    await generateBpmSongs({
+      session: mockSession,
+      lowBpm: 100,
+      highBpm: 120,
+      playlists: [{ id: '1', name: 'Big Playlist', tracks: { total: 360 } }],
+    });
+
+    expect(peak).toBeGreaterThan(1);
   });
 });

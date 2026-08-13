@@ -1,15 +1,17 @@
 'use server';
 
-import { chunkArray, mapWithConcurrency } from './concurrency';
+import { chunkArray, mapWithConcurrency } from '../concurrency';
 import { DEEZER_CONCURRENCY, fetchTempoByIsrc } from './deezer';
 import { RECCOBEATS_BATCH_SIZE, fetchTempoBatch } from './reccobeats';
 import { TempoAnalysis, TempoLookupTrack } from './types';
 
 /**
  * ReccoBeats is a small free service, so we stay well-mannered: a handful of
- * batches at a time rather than one request per 40 tracks all at once.
+ * batches at a time rather than one request per 40 tracks all at once. The
+ * caller runs several of these lookups at once, so the real ceiling is this
+ * times TEMPO_CHUNK_CONCURRENCY.
  */
-const RECCOBEATS_CONCURRENCY = 4;
+const RECCOBEATS_CONCURRENCY = 3;
 
 /**
  * Tempos are a property of a recording, not of a user, so they are cached

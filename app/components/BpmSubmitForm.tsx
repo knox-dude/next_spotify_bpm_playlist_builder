@@ -4,9 +4,8 @@ import React, { useState } from 'react';
 import { AuthSession } from '../types/types';
 import { Playlist } from '../types/updatedTypes';
 import { useSelectedPlaylists } from '../providers/SelectedPlaylistsProvider';
-import BpmInputSection from './BpmInputSection';
-import OptionCheckboxes from './OptionCheckboxes';
-import PlaylistSelection from './PlaylistSelection';
+import TempoRangeCard from './TempoRangeCard';
+import SourcesCard from './SourcesCard';
 import GenerateButton from './GenerateButton';
 
 interface handleBpmGenerationProps {
@@ -48,9 +47,44 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({
 
   const { selectedPlaylists } = useSelectedPlaylists();
 
+  const handleBpmInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    if (name === 'lowBpm') {
+      setLowBpm(value);
+    } else if (name === 'highBpm') {
+      setHighBpm(value);
+    }
+  };
+
+  const setRange = (low: string, high: string) => {
+    setLowBpm(low);
+    setHighBpm(high);
+  };
+
+  /** Everything standing between the user and a scan, in plain words. */
+  const blockers = (): string[] => {
+    const reasons: string[] = [];
+    const lowParsed = parseInt(lowBpm);
+    const highParsed = parseInt(highBpm);
+
+    if (isNaN(lowParsed) || isNaN(highParsed) || lowParsed <= 0 || highParsed <= 0) {
+      reasons.push('Enter a lower and upper BPM.');
+    } else if (lowParsed > highParsed) {
+      reasons.push('The lower BPM has to be below the upper one.');
+    }
+    if (!shortTerm && !mediumTerm && !longTerm && selectedPlaylists.length === 0) {
+      reasons.push('Pick at least one playlist or a set of top songs.');
+    }
+
+    return reasons;
+  };
+
+  const reasons = blockers();
+  const canSubmit = reasons.length === 0;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (canSubmit()) {
+    if (canSubmit) {
       handleBpmGeneration({
         lowBpm,
         highBpm,
@@ -64,51 +98,31 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({
     }
   };
 
-  const handleBpmInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    if (name === 'lowBpm') {
-      setLowBpm(value);
-    } else if (name === 'highBpm') {
-      setHighBpm(value);
-    }
-  };
-
-  const canSubmit = (): boolean => {
-    const lowParsed = parseInt(lowBpm);
-    const highParsed = parseInt(highBpm);
-    if (isNaN(lowParsed) || isNaN(highParsed)) {
-      return false;
-    }
-    if (!shortTerm && !mediumTerm && !longTerm) {
-      if (selectedPlaylists.length === 0) {
-        return false;
-      }
-    }
-    return lowParsed > 0 && highParsed > 0 && lowParsed <= highParsed;
-  };
-
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex w-full flex-col items-center justify-center self-center"
-    >
-      <div className="flex w-full justify-center self-center text-xl font-bold text-gray-400 sm:justify-around sm:text-2xl">
-        <p>Choose BPM range </p>
-      </div>
-      <BpmInputSection
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <header>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          Build a playlist at your tempo
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm text-gray-400 sm:text-base">
+          Set a BPM range, choose what to search, and every song in your library
+          that keeps that pace comes back in one list.
+        </p>
+      </header>
+
+      <TempoRangeCard
         lowBpm={lowBpm}
         highBpm={highBpm}
         handleBpmInputChange={handleBpmInputChange}
-      />
-      <hr className="h-px w-full my-2 bg-gray-500 border-0 z-10"></hr>
-      <div className="flex w-full justify-center self-center text-xl font-bold text-gray-400 sm:justify-around sm:text-2xl">
-        <p>Choose options </p>
-      </div>
-      <OptionCheckboxes
+        setRange={setRange}
         doubleSpeed={doubleSpeed}
         setDoubleSpeed={setDoubleSpeed}
         halfSpeed={halfSpeed}
         setHalfSpeed={setHalfSpeed}
+      />
+
+      <SourcesCard
+        session={session}
         shortTerm={shortTerm}
         setShortTerm={setShortTerm}
         mediumTerm={mediumTerm}
@@ -116,9 +130,8 @@ const BpmSubmitForm: React.FC<BpmSubmitFormProps> = ({
         longTerm={longTerm}
         setLongTerm={setLongTerm}
       />
-      <hr className="h-px w-full my-2 bg-gray-500 border-0 z-10"></hr>
-      <PlaylistSelection session={session} />
-      <GenerateButton canSubmit={canSubmit} />
+
+      <GenerateButton disabled={!canSubmit} reasons={reasons} />
     </form>
   );
 };

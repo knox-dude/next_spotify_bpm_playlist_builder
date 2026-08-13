@@ -36,6 +36,11 @@ export async function mapWithConcurrency<T, R>(
   return results;
 }
 
+/** Resolves after `ms` milliseconds. */
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /**
  * Splits an array into chunks of at most `chunkSize` items.
  *

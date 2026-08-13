@@ -1,3 +1,4 @@
+import { fetchWithRateLimitRetry } from './http';
 import { TempoAnalysis } from './types';
 
 const ENDPOINT = 'https://api.reccobeats.com/v1/audio-features';
@@ -46,7 +47,7 @@ export async function fetchTempoBatch(
     );
   }
 
-  const res = await fetch(`${ENDPOINT}?ids=${ids.join(',')}`, {
+  const res = await fetchWithRateLimitRetry(`${ENDPOINT}?ids=${ids.join(',')}`, {
     headers: { Accept: 'application/json' },
     signal,
   });

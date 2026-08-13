@@ -4,7 +4,7 @@ import {
   fetchTempoBatch,
 } from '../../lib/bpm/reccobeats';
 import { fetchTempoByIsrc } from '../../lib/bpm/deezer';
-import { chunkArray, mapWithConcurrency } from '../../lib/bpm/concurrency';
+import { chunkArray, mapWithConcurrency } from '../../lib/concurrency';
 
 /** Builds a ReccoBeats-shaped response item for a Spotify track id. */
 const reccoItem = (spotifyId: string, tempo: number | null) => ({

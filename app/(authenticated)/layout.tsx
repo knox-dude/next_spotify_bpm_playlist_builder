@@ -69,12 +69,13 @@ export default function RootLayout({
         <body
           className={
             fontFamily.className +
-            ' min-h-[100dvh] flex flex-col bg-background text-white items-stretch p-2 sm:p-3'
+            ' min-h-[100dvh] bg-background text-white antialiased'
           }
         >
-          <div className="flex flex-1 flex-col rounded-lg bg-paper-400">
-            <main className="mx-3 my-4 sm:mx-6 lg:mx-8">{children}</main>
-          </div>
+          {/* A single green wash behind the page, echoing the login screen, so
+              the app doesn't read as a flat black form. */}
+          <div className="pointer-events-none fixed inset-x-0 top-0 h-96 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(30,215,96,0.12),transparent_70%)]" />
+          <div className="relative flex min-h-[100dvh] flex-col">{children}</div>
         </body>
       </NextAuthProvider>
     </html>

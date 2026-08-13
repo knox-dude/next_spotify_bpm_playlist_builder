@@ -4,14 +4,11 @@ import { SelectedPlaylistsProvider } from '../providers/SelectedPlaylistsProvide
 import BpmSubmitForm from './BpmSubmitForm';
 import { AuthSession } from '../types/types';
 import { Playlist, TrackWithAudioFeature } from '../types/updatedTypes';
-import { Audio } from 'react-loader-spinner';
-import ResultPlaylist from './ResultPlaylist';
+import ScanProgressOverlay from './ScanProgressOverlay';
+import ResultsView from './ResultsView';
 import { SelectedSongsProvider } from '../providers/SelectedSongsProvider';
-import SaveSongsButton from './SaveSongsButton';
-import TextInput from './TextInput';
 import useCreatePlaylist from '../hooks/useCreatePlaylist';
 import useGenerateBpmSongs from '../hooks/useGenerateBpmSongs';
-import { signOut } from 'next-auth/react';
 
 interface HandleBpmGenerationProps {
   lowBpm: string;
@@ -39,20 +36,12 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
   const {
     generateSongs,
     loading: generateLoading,
-    results,
+    progress,
+    result,
     completed,
     error: generateError,
     setCompleted,
   } = useGenerateBpmSongs(session);
-
-  const handleSignOut = async () => {
-    try {
-      // Clear session cookies for full logout - redirect to login page afterwards
-      signOut({ callbackUrl: '/login' });
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
-  };
 
   const handleBpmGeneration = (params: HandleBpmGenerationProps) => {
     generateSongs(params);
@@ -67,14 +56,11 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
         newPlaylistName,
         songs,
       );
-      console.log('Playlist created:', newPlaylistId);
       if (newWindow) {
         newWindow.location.href = `https://open.spotify.com/playlist/${newPlaylistId}`;
       }
-      // Handle post-creation logic, e.g., reset state, show a success message, etc.
     } catch (error) {
       console.error('Error creating playlist:', error);
-      alert(`Error creating playlist: ${error}`);
       if (newWindow) {
         newWindow.close();
       }
@@ -83,75 +69,45 @@ function BpmFormHolder({ session }: BpmFormHolderProps) {
 
   return (
     <SelectedPlaylistsProvider>
-      <button
-        className="self-center rounded bg-paper-500 px-4 py-2 text-sm font-bold text-white hover:bg-paper-600 sm:text-base"
-        onClick={handleSignOut}
-      >
-        Sign out
-      </button>
       {!generateLoading && !completed && (
-        <BpmSubmitForm
-          session={session}
-          handleBpmGeneration={handleBpmGeneration}
-        />
+        <>
+          {generateError && (
+            <p
+              role="alert"
+              className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-center text-sm font-semibold text-red-400"
+            >
+              {generateError}
+            </p>
+          )}
+          <BpmSubmitForm
+            session={session}
+            handleBpmGeneration={handleBpmGeneration}
+          />
+        </>
       )}
-      {generateLoading && (
-        <div className="fixed inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-gray-800 bg-opacity-75 px-6 text-center">
-          <Audio color="#1DB954" height={80} width={80} />
-          <p className="text-lg font-bold text-gray-400 sm:text-2xl">
-            Please sit back and relax, this could take a while...
-          </p>
-        </div>
-      )}
+
+      {generateLoading && <ScanProgressOverlay progress={progress} />}
+
       <SelectedSongsProvider>
         {!generateLoading && completed && (
-          <div className="w-full self-center">
-            <div className="m-2 flex flex-col justify-center gap-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setCompleted(false);
-                }}
-                className="mb-4 w-full self-center rounded-md bg-paper-500 p-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600 sm:w-1/3 sm:text-base"
+          <>
+            {createError && (
+              <p
+                role="alert"
+                className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-center text-sm font-semibold text-red-400"
               >
-                Back to Playlist Builder
-              </button>
-            </div>
-
-            <div className="flex w-full items-center justify-center text-center align-middle">
-              <div className="max-h-[60vh] w-full overflow-auto align-middle">
-                {Array.from(results.entries()).some(
-                  ([_, tracks]) => tracks.length > 0,
-                ) ? (
-                  Array.from(results.entries()).map(
-                    ([playlist, tracks]) =>
-                      tracks.length > 0 && (
-                        <ResultPlaylist
-                          playlist={playlist}
-                          tracks={tracks}
-                          key={playlist.id}
-                        />
-                      ),
-                  )
-                ) : (
-                  <p className="text-3xl font-bold self-center">
-                    No tracks found with chosen BPM :(
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="m-2 flex flex-col justify-center gap-4">
-              <TextInput
-                className={'w-full self-center sm:w-1/3'}
-                label="playlist-name"
-                value={newPlaylistName}
-                placeholder={'playlist name'}
-                onChange={(e) => setNewPlaylistName(e.target.value)}
-              />
-              <SaveSongsButton onClick={saveSongsToPlaylist} />
-            </div>
-          </div>
+                {createError}
+              </p>
+            )}
+            <ResultsView
+              result={result}
+              onBack={() => setCompleted(false)}
+              playlistName={newPlaylistName}
+              setPlaylistName={setNewPlaylistName}
+              onSave={saveSongsToPlaylist}
+              saving={createLoading}
+            />
+          </>
         )}
       </SelectedSongsProvider>
     </SelectedPlaylistsProvider>

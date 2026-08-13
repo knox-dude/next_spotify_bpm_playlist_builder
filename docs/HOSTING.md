@@ -9,7 +9,7 @@ Worth pinning down first, because it rules out a lot of options:
 
 | Requirement | Why |
 | --- | --- |
-| **A Node server runtime** | NextAuth runs the OAuth code exchange server-side |
+| **A Node 24 server runtime** | NextAuth runs the OAuth code exchange server-side; the version is pinned in `engines`/`.nvmrc` |
 | **Server-side secrets** | `SPOTIFY_CLIENT_SECRET` must never reach the browser |
 | **Server Actions** | The Spotify and BPM calls run through `'use server'` modules |
 | **~5s function budget** | Longest single tempo-lookup call (see note below) |
@@ -38,6 +38,12 @@ The BPM scan is chunked so no single server call runs long. `lookupTempos()`
 sends 120 tracks per call (~2.5s measured, including the Deezer fallback), and
 the browser drives the loop. So a 3,000-track library is ~25 short calls rather
 than one 60-second call.
+
+Those calls now go out three at a time rather than one after another, which
+changes the wall-clock (~25 rounds becomes ~9) but not the per-invocation
+budget, which is what the timeout actually caps. Track collection is fanned out
+the same way: each source is its own call, and the pages within a source are
+requested by offset in parallel instead of walking `next` links one at a time.
 
 This matters: **it is what keeps the app inside a 10s free-tier function limit.**
 If you ever refactor the scan to run entirely server-side in one request, you

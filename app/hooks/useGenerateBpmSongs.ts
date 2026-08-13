@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { AuthSession } from '../types/types';
-import { Playlist, TrackWithAudioFeature } from '../types/updatedTypes';
-import { generateBpmSongs } from '../lib/generateBpmSongs';
+import { Playlist } from '../types/updatedTypes';
+import {
+  ScanProgress,
+  ScanResult,
+  generateBpmSongs,
+} from '../lib/generateBpmSongs';
 
 interface HandleBpmGenerationProps {
   lowBpm: string;
@@ -14,39 +18,55 @@ interface HandleBpmGenerationProps {
   selectedPlaylists: Playlist[];
 }
 
+const EMPTY_RESULT: ScanResult = {
+  tracks: [],
+  scannedCount: 0,
+  sourceCount: 0,
+};
+
 const useGenerateBpmSongs = (session: AuthSession) => {
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<
-    Map<Playlist, TrackWithAudioFeature[]>
-  >(new Map());
+  const [result, setResult] = useState<ScanResult>(EMPTY_RESULT);
+  const [progress, setProgress] = useState<ScanProgress | null>(null);
   const [completed, setCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const generateSongs = async (params: HandleBpmGenerationProps) => {
     setLoading(true);
     setError(null);
+    setProgress(null);
     try {
-      const result = await generateBpmSongs(
-        parseInt(params.lowBpm),
-        parseInt(params.highBpm),
-        params.doubleSpeed,
-        params.halfSpeed,
-        params.shortTerm,
-        params.mediumTerm,
-        params.longTerm,
+      const scan = await generateBpmSongs({
         session,
-        params.selectedPlaylists,
-      );
-      setResults(result);
+        lowBpm: parseInt(params.lowBpm),
+        highBpm: parseInt(params.highBpm),
+        useDoubleSpeed: params.doubleSpeed,
+        useHalfSpeed: params.halfSpeed,
+        useTopShortTerm: params.shortTerm,
+        useTopMediumTerm: params.mediumTerm,
+        useTopLongTerm: params.longTerm,
+        playlists: params.selectedPlaylists,
+        onProgress: setProgress,
+      });
+      setResult(scan);
       setCompleted(true);
     } catch (err) {
       setError(`problem getting bpm songs: ${err}`);
     } finally {
       setLoading(false);
+      setProgress(null);
     }
   };
 
-  return { generateSongs, loading, results, completed, error, setCompleted };
+  return {
+    generateSongs,
+    loading,
+    progress,
+    result,
+    completed,
+    error,
+    setCompleted,
+  };
 };
 
 export default useGenerateBpmSongs;

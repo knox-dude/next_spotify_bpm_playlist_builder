@@ -2,8 +2,10 @@ import { AuthSession } from '../types/types';
 import { Playlist, Track, TrackWithAudioFeature } from '../types/updatedTypes';
 import { TempoAnalysis } from './bpm/types';
 import { getTempos } from './bpm';
+import { chunkArray, mapWithConcurrency } from './concurrency';
 import {
   getAllUserSavedTracks,
+  getArtistGenres,
   getTopItems,
   getTrackFromPlaylistLink,
 } from './actions';
@@ -18,13 +20,78 @@ export const TOP_TRACKS_IDS = {
   long_term: '__top_long_term__',
 } as const;
 
-// splits arrays (of tracks) into chunks
-function chunkArray<T>(array: T[], chunkSize: number): T[][] {
-  const result: T[][] = [];
-  for (let i = 0; i < array.length; i += chunkSize) {
-    result.push(array.slice(i, i + chunkSize));
-  }
-  return result;
+/**
+ * How many sources to pull tracks from at once.
+ *
+ * Each source is one server action, and each of those pages through Spotify in
+ * parallel internally, so this multiplies. Four is enough to hide the latency of
+ * a slow playlist without turning a 60-playlist scan into a burst Spotify will
+ * rate-limit.
+ */
+const SOURCE_CONCURRENCY = 4;
+
+/**
+ * How many tracks to resolve per call into the tempo provider.
+ *
+ * getTempos runs server-side, so one call is one serverless invocation. Hosts
+ * cap those: Vercel's Hobby tier kills a function at 10s. Resolving a whole
+ * library in a single call would blow straight past that, so the work is split
+ * into chunks that each finish in a couple of seconds. Measured at ~2.5s for
+ * 117 tracks including the Deezer fallback.
+ */
+const TEMPO_LOOKUP_CHUNK = 120;
+
+/**
+ * How many of those chunks to run at once.
+ *
+ * The chunking exists for the per-invocation time limit, not for politeness, so
+ * the chunks have no reason to run one after another — three at a time turns a
+ * 3,000-track lookup from about a minute into about twenty seconds. The
+ * providers' own concurrency limits are set with this multiplier in mind.
+ */
+const TEMPO_CHUNK_CONCURRENCY = 3;
+
+/** Progress phases, in the order a scan moves through them. */
+export type ScanPhase = 'sources' | 'tempos' | 'genres';
+
+/** A progress report, emitted as each unit of work finishes. */
+export interface ScanProgress {
+  phase: ScanPhase;
+  /** Units finished so far in this phase. */
+  done: number;
+  /** Units in this phase. */
+  total: number;
+}
+
+/** What a scan produced. */
+export interface ScanResult {
+  /** Every matching track, de-duplicated across sources, slowest tempo first. */
+  tracks: TrackWithAudioFeature[];
+  /** How many distinct tracks were considered. */
+  scannedCount: number;
+  /** How many sources those tracks came from. */
+  sourceCount: number;
+}
+
+/** Everything a scan needs. */
+export interface GenerateBpmSongsOptions {
+  session: AuthSession;
+  lowBpm: number;
+  highBpm: number;
+  /** Also accept tracks at twice the target pace. */
+  useDoubleSpeed?: boolean;
+  /** Also accept tracks at half the target pace. */
+  useHalfSpeed?: boolean;
+  /** Include top tracks from the last 4 weeks. */
+  useTopShortTerm?: boolean;
+  /** Include top tracks from the last 6 months. */
+  useTopMediumTerm?: boolean;
+  /** Include top tracks from the last year. */
+  useTopLongTerm?: boolean;
+  /** The selected playlists, including the synthetic Liked Songs entry. */
+  playlists?: Playlist[];
+  /** Called as work completes, so the UI can show something truthful. */
+  onProgress?: (progress: ScanProgress) => void;
 }
 
 /**
@@ -75,71 +142,38 @@ function tempoMatches(
 }
 
 /**
- * Keeps only the songs whose tempo falls in the desired BPM range.
- *
- * @param {number} lowBpm - Bottom of the desired range.
- * @param {number} highBpm - Top of the desired range.
- * @param {Track[][]} chunkedSongs - Songs to filter, in chunks.
- * @param {AuthSession} session - Unused; kept for call-site compatibility.
- * @param {boolean} getDoubled - Also accept tracks at twice the target pace.
- * @param {boolean} getHalved - Also accept tracks at half the target pace.
- * @return {Promise<TrackWithAudioFeature[]>} The matching tracks, each paired
- *   with the tempo we resolved for it.
- */
-async function keepSongsInCorrectBpmRange(
-  lowBpm: number,
-  highBpm: number,
-  chunkedSongs: Track[][],
-  session: AuthSession,
-  getDoubled = false,
-  getHalved = false,
-): Promise<TrackWithAudioFeature[]> {
-  const songs = chunkedSongs.flat().filter(isPlayableTrack);
-  const tempos = await lookupTempos(songs);
-
-  return matchSongsToTempos(
-    songs,
-    tempos,
-    lowBpm,
-    highBpm,
-    getDoubled,
-    getHalved,
-  );
-}
-
-/**
- * How many tracks to resolve per call into the tempo provider.
- *
- * getTempos runs server-side, so one call is one serverless invocation. Hosts
- * cap those: Vercel's Hobby tier kills a function at 10s. Resolving a whole
- * library in a single call would blow straight past that, so the work is split
- * into chunks that each finish in a couple of seconds. Measured at ~2.5s for
- * 117 tracks including the Deezer fallback.
- */
-const TEMPO_LOOKUP_CHUNK = 120;
-
-/**
  * Resolves tempos for a set of tracks, keyed by Spotify track id.
  *
  * @param {Track[]} songs - The tracks to resolve.
+ * @param {function} [onProgress] - Called with the number of tracks resolved so far.
  * @return {Promise<Map<string, TempoAnalysis>>} Tempo by Spotify track id.
  */
 async function lookupTempos(
   songs: Track[],
+  onProgress?: (done: number, total: number) => void,
 ): Promise<Map<string, TempoAnalysis>> {
   const tempos = new Map<string, TempoAnalysis>();
+  const chunks = chunkArray(songs, TEMPO_LOOKUP_CHUNK);
+  let finished = 0;
 
-  // Sequential rather than parallel: it keeps a big library from firing dozens
-  // of concurrent requests at two free APIs.
-  for (const chunk of chunkArray(songs, TEMPO_LOOKUP_CHUNK)) {
-    const analyses = await getTempos(
-      chunk.map((song) => ({
-        id: song.id,
-        isrc: song.external_ids?.isrc ?? null,
-      })),
-    );
+  const chunkResults = await mapWithConcurrency(
+    chunks,
+    TEMPO_CHUNK_CONCURRENCY,
+    async (chunk) => {
+      const analyses = await getTempos(
+        chunk.map((song) => ({
+          id: song.id,
+          isrc: song.external_ids?.isrc ?? null,
+        })),
+      );
+      finished += chunk.length;
+      onProgress?.(finished, songs.length);
+      return analyses;
+    },
+  );
 
-    for (const analysis of analyses) {
+  for (const analyses of chunkResults) {
+    for (const analysis of analyses ?? []) {
       tempos.set(analysis.id, analysis);
     }
   }
@@ -227,7 +261,7 @@ async function collectSourceTracks(
 
 /**
  * Builds a synthetic playlist for one of the non-playlist sources so it can
- * flow through the same selection and result-rendering path as a real one.
+ * flow through the same selection path as a real one.
  *
  * @param {string} id - Sentinel id for the source.
  * @param {string} name - Display name.
@@ -244,34 +278,66 @@ function syntheticPlaylist(id: string, name: string, image: string): Playlist {
 }
 
 /**
- * Scans the selected sources and returns, per source, the songs whose tempo
- * falls in the requested BPM range.
+ * Attaches each track's primary-artist genres, which is the only genre Spotify
+ * exposes — tracks and albums carry none.
  *
- * Tempos for every selected source are resolved in a single pass so a song that
- * appears in five playlists is only looked up once.
+ * A failure here is not worth losing a scan over: the results simply group under
+ * "No genre" instead.
  *
- * @param {number} lowBpm - Bottom of the desired range.
- * @param {number} highBpm - Top of the desired range.
- * @param {boolean} useDoubleSpeed - Also accept tracks at twice the target pace.
- * @param {boolean} useHalfSpeed - Also accept tracks at half the target pace.
- * @param {boolean} useTopShortTerm - Include top tracks from the last 4 weeks.
- * @param {boolean} useTopMediumTerm - Include top tracks from the last 6 months.
- * @param {boolean} useTopLongTerm - Include top tracks from the last year.
  * @param {AuthSession} session - The session object containing the user's authentication information.
- * @param {Playlist[]} [playlists] - The selected playlists.
- * @return {Promise<Map<Playlist, TrackWithAudioFeature[]>>} Matching songs per source.
+ * @param {TrackWithAudioFeature[]} tracks - The matched tracks.
+ * @return {Promise<TrackWithAudioFeature[]>} The same tracks, with genres filled in.
  */
-async function generateBpmSongs(
-  lowBpm: number,
-  highBpm: number,
-  useDoubleSpeed: boolean,
-  useHalfSpeed: boolean,
-  useTopShortTerm: boolean,
-  useTopMediumTerm: boolean,
-  useTopLongTerm: boolean,
+async function attachGenres(
   session: AuthSession,
-  playlists?: Playlist[],
-): Promise<Map<Playlist, TrackWithAudioFeature[]>> {
+  tracks: TrackWithAudioFeature[],
+): Promise<TrackWithAudioFeature[]> {
+  const artistIds = tracks
+    .map((track) => track.artists?.[0]?.id)
+    .filter((id): id is string => !!id);
+
+  if (artistIds.length === 0) {
+    return tracks;
+  }
+
+  try {
+    const genresByArtist = await getArtistGenres(session, artistIds);
+    return tracks.map((track) => {
+      const artistId = track.artists?.[0]?.id;
+      return {
+        ...track,
+        genres: (artistId && genresByArtist[artistId]) || [],
+      };
+    });
+  } catch {
+    return tracks;
+  }
+}
+
+/**
+ * Scans the selected sources and returns every song whose tempo falls in the
+ * requested BPM range.
+ *
+ * Sources are pulled in parallel, tempos are resolved in parallel across the
+ * whole selection (so a song in five playlists is looked up once), and the
+ * result is a single de-duplicated list — which playlist a song arrived from
+ * stops mattering the moment it has a tempo.
+ *
+ * @param {GenerateBpmSongsOptions} options - The scan parameters.
+ * @return {Promise<ScanResult>} The matching tracks and what was scanned.
+ */
+async function generateBpmSongs({
+  session,
+  lowBpm,
+  highBpm,
+  useDoubleSpeed = false,
+  useHalfSpeed = false,
+  useTopShortTerm = false,
+  useTopMediumTerm = false,
+  useTopLongTerm = false,
+  playlists,
+  onProgress,
+}: GenerateBpmSongsOptions): Promise<ScanResult> {
   const sources: Playlist[] = [...(playlists ?? [])];
 
   if (useTopShortTerm) {
@@ -306,46 +372,65 @@ async function generateBpmSongs(
     throw new Error('No playlists or top tracks selected');
   }
 
-  // Gather every source's tracks first, so the tempo lookup can be done once
-  // across the whole selection instead of once per playlist.
-  const perSource = new Map<Playlist, Track[]>();
-  for (const source of sources) {
-    perSource.set(source, await collectSourceTracks(session, source));
-  }
+  onProgress?.({ phase: 'sources', done: 0, total: sources.length });
 
+  let sourcesDone = 0;
+  const perSource = await mapWithConcurrency(
+    sources,
+    SOURCE_CONCURRENCY,
+    async (source) => {
+      const tracks = await collectSourceTracks(session, source);
+      sourcesDone += 1;
+      onProgress?.({
+        phase: 'sources',
+        done: sourcesDone,
+        total: sources.length,
+      });
+      return tracks;
+    },
+  );
+
+  // One song can sit in a dozen playlists; it only needs one tempo lookup.
   const allTracks = new Map<string, Track>();
-  for (const tracks of perSource.values()) {
-    for (const track of tracks) {
+  for (const tracks of perSource) {
+    for (const track of tracks ?? []) {
       if (!allTracks.has(track.id)) {
         allTracks.set(track.id, track);
       }
     }
   }
 
-  const tempos = await lookupTempos([...allTracks.values()]);
+  const candidates = [...allTracks.values()];
+  onProgress?.({ phase: 'tempos', done: 0, total: candidates.length });
 
-  const playlistTracks = new Map<Playlist, TrackWithAudioFeature[]>();
-  for (const [source, tracks] of perSource) {
-    playlistTracks.set(
-      source,
-      matchSongsToTempos(
-        tracks,
-        tempos,
-        lowBpm,
-        highBpm,
-        useDoubleSpeed,
-        useHalfSpeed,
-      ),
-    );
-  }
+  const tempos = await lookupTempos(candidates, (done, total) =>
+    onProgress?.({ phase: 'tempos', done, total }),
+  );
 
-  return playlistTracks;
+  const matches = matchSongsToTempos(
+    candidates,
+    tempos,
+    lowBpm,
+    highBpm,
+    useDoubleSpeed,
+    useHalfSpeed,
+  );
+
+  onProgress?.({ phase: 'genres', done: 0, total: matches.length });
+  const withGenres = await attachGenres(session, matches);
+  onProgress?.({ phase: 'genres', done: matches.length, total: matches.length });
+
+  return {
+    tracks: withGenres.sort((a, b) => a.analysis.tempo - b.analysis.tempo),
+    scannedCount: candidates.length,
+    sourceCount: sources.length,
+  };
 }
 
 export {
   chunkArray,
   isPlayableTrack,
   tempoMatches,
-  keepSongsInCorrectBpmRange,
+  matchSongsToTempos,
   generateBpmSongs,
 };

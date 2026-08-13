@@ -30,8 +30,6 @@ const useCreatePlaylist = (session: AuthSession) => {
         );
       }
 
-      console.log(createResponse);
-
       const addResponse = await addSongsToPlaylist(
         session,
         createResponse.id,
@@ -46,8 +44,9 @@ const useCreatePlaylist = (session: AuthSession) => {
 
       return createResponse.id;
     } catch (error: any) {
+      // Surfaced by the caller through `error`; an alert() on top of that is
+      // just a second thing to dismiss.
       setError(error.message);
-      alert(`error creating playlist - ${error.message}`);
       throw error;
     } finally {
       setLoading(false);

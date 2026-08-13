@@ -1,6 +1,7 @@
 import React from 'react';
 
 interface TextInputProps {
+  /** Doubles as the field's `name` and its accessible name. */
   label: string;
   value: string;
   placeholder?: string;
@@ -19,7 +20,7 @@ const TextInput: React.FC<TextInputProps> = ({
   inputMode,
 }) => (
   <input
-    className={`m-2 rounded-md bg-gray-200 p-2 text-center text-black ${className}`}
+    className={`w-full rounded-xl border border-white/10 bg-paper-600 px-4 py-3 text-base text-white placeholder:text-gray-600 transition focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 ${className}`}
     placeholder={placeholder}
     name={label}
     aria-label={label}

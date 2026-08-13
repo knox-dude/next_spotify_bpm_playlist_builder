@@ -1,12 +1,15 @@
+import { fetchWithRateLimitRetry } from './http';
 import { TempoAnalysis } from './types';
 
 const ENDPOINT = 'https://api.deezer.com/2.0/track/isrc:';
 
 /**
- * Deezer quotas are roughly 50 requests per 5 seconds per IP, so we look ISRCs
- * up a few at a time rather than firing the whole backlog at once.
+ * Deezer quotas are roughly 50 requests per 5 seconds per IP, and a scan now
+ * runs several lookup calls at once (see TEMPO_CHUNK_CONCURRENCY), so the
+ * per-call figure is deliberately small: it multiplies. Anything that still
+ * slips past the quota comes back as a 429 and is retried.
  */
-export const DEEZER_CONCURRENCY = 4;
+export const DEEZER_CONCURRENCY = 2;
 
 /**
  * Looks a tempo up by ISRC, the recording identifier Spotify exposes as
@@ -26,10 +29,13 @@ export async function fetchTempoByIsrc(
   isrc: string,
   signal?: AbortSignal,
 ): Promise<TempoAnalysis | null> {
-  const res = await fetch(`${ENDPOINT}${encodeURIComponent(isrc)}`, {
-    headers: { Accept: 'application/json' },
-    signal,
-  });
+  const res = await fetchWithRateLimitRetry(
+    `${ENDPOINT}${encodeURIComponent(isrc)}`,
+    {
+      headers: { Accept: 'application/json' },
+      signal,
+    },
+  );
 
   if (!res.ok) {
     return null;

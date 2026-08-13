@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Search } from 'lucide-react';
 
 interface SearchBarProps {
   placeholder: string;
@@ -6,7 +7,11 @@ interface SearchBarProps {
   setSearchValue: (value: string) => void;
 }
 
-const DebouncedSearchBar: React.FC<SearchBarProps> = ({ placeholder, searchValue, setSearchValue }) => {
+const DebouncedSearchBar: React.FC<SearchBarProps> = ({
+  placeholder,
+  searchValue,
+  setSearchValue,
+}) => {
   const [inputValue, setInputValue] = useState(searchValue);
 
   useEffect(() => {
@@ -24,13 +29,20 @@ const DebouncedSearchBar: React.FC<SearchBarProps> = ({ placeholder, searchValue
   };
 
   return (
-    <input
-      type="text"
-      value={inputValue}
-      onChange={handleChange}
-      placeholder={placeholder}
-      className="w-full min-w-0 rounded border border-gray-300 p-2 text-gray-600 sm:w-auto"
-    />
+    <div className="relative w-full">
+      <Search
+        size={16}
+        aria-hidden="true"
+        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+      />
+      <input
+        type="text"
+        value={inputValue}
+        onChange={handleChange}
+        placeholder={placeholder}
+        className="w-full rounded-full border border-white/10 bg-paper-600/60 py-2 pl-9 pr-3 text-sm text-white placeholder:text-gray-500 transition focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30"
+      />
+    </div>
   );
 };
 

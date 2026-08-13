@@ -1,23 +1,32 @@
 import { useSelectedSongs } from '../providers/SelectedSongsProvider';
 import { TrackWithAudioFeature } from '../types/updatedTypes';
+import { PRIMARY_BUTTON } from './ui/styles';
 
-function SaveSongsButton({
-  onClick,
-}: {
-  onClick: (songs: TrackWithAudioFeature[], newWindow: Window | null) => void;
-}) {
+interface SaveSongsButtonProps {
+  onClick: (
+    songs: TrackWithAudioFeature[],
+    newWindow: Window | null,
+  ) => void | Promise<void>;
+  disabled?: boolean;
+  saving?: boolean;
+}
+
+function SaveSongsButton({ onClick, disabled, saving }: SaveSongsButtonProps) {
   const { selectedSongs } = useSelectedSongs();
 
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={() => {
+        // Opened synchronously off the click, or the browser treats the later
+        // redirect to Spotify as a popup and blocks it.
         const newWindow = window.open('', '_blank');
         onClick(selectedSongs, newWindow);
       }}
-      className="mb-4 w-full self-center rounded-md bg-paper-500 p-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-paper-600 sm:w-1/3 sm:text-base"
+      className={`${PRIMARY_BUTTON} !px-6 !py-2.5 !text-xs sm:!text-sm`}
     >
-      Save Songs to Playlist
+      {saving ? 'Saving...' : 'Save to Spotify'}
     </button>
   );
 }

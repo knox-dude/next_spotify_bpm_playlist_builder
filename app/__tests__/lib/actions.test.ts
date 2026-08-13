@@ -288,6 +288,40 @@ describe('Spotify API functions', () => {
     expect(response.map((item) => item.track.id)).toEqual(['track1', 'track2']);
   });
 
+  test('getAllUserSavedTracks requests later pages by offset, in parallel', async () => {
+    // With a total and a limit in hand there is no reason to wait for each
+    // page's `next` link before asking for the one after it.
+    const page = (ids: string[], offset: number) =>
+      JSON.stringify({
+        items: ids.map((id) => ({ added_at: '2024-01-01', track: { id } })),
+        limit: 2,
+        offset,
+        total: 6,
+        next: offset + 2 < 6 ? 'https://api.spotify.com/v1/me/tracks' : null,
+      });
+
+    fetch.mockResponses(
+      [page(['track1', 'track2'], 0), { status: 200 }],
+      [page(['track3', 'track4'], 2), { status: 200 }],
+      [page(['track5', 'track6'], 4), { status: 200 }],
+    );
+
+    const response = await getAllUserSavedTracks(mockSession);
+
+    expect(response.map((item) => item.track.id)).toEqual([
+      'track1',
+      'track2',
+      'track3',
+      'track4',
+      'track5',
+      'track6',
+    ]);
+    const requested = fetch.mock.calls.map(([url]) => url as string);
+    expect(requested).toHaveLength(3);
+    expect(requested[1]).toContain('offset=2');
+    expect(requested[2]).toContain('offset=4');
+  });
+
   test('addSongsToPlaylist does not mutate the caller array', async () => {
     fetch.mockResponse(JSON.stringify({ snapshot_id: 'abc' }));
 

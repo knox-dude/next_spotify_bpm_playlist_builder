@@ -1,35 +1,97 @@
 // Disclaimer: Code partially taken from Next-Spotify-V2 (https://github.com/ankitk26/Next-Spotify-v2)
 
+// Everything here runs on the server. That matters for more than secrecy: these
+// functions page through Spotify from inside a single request, so fetching a
+// 2,000-track library costs the browser one round trip instead of forty.
+'use server';
+
 import { AuthSession } from '../types/types';
 import {
+  Artist,
   PlaylistedTrack,
   Track,
   SavedTrack,
   SimplifiedPlaylist,
 } from '../types/updatedTypes';
 import { customGet } from '../utils/serverUtils';
+import { chunkArray, mapWithConcurrency } from './concurrency';
+
+/**
+ * How many pages of one paging object to request at a time.
+ *
+ * The caller fetches several sources at once (SOURCE_CONCURRENCY), so the real
+ * ceiling is this times that - around 20 Spotify requests in flight at the peak
+ * of a big scan. Spotify's limit is a rolling 30-second window rather than a
+ * fixed rate and customGet backs off on a 429, so bursts are survivable; this is
+ * about not making a habit of them.
+ */
+const PAGE_CONCURRENCY = 5;
+
+/** Spotify's cap for `/artists?ids=`. */
+const ARTIST_BATCH_SIZE = 50;
+
+/** Returns `url` with `offset` set to the given value. */
+const withOffset = (url: string, offset: number): string => {
+  const parsed = new URL(url);
+  parsed.searchParams.set('offset', String(offset));
+  return parsed.toString();
+};
 
 /**
  * Walks a Spotify paging object to the end, collecting every page's items.
  *
+ * The first page tells us `total` and `limit`, which is enough to address every
+ * remaining page by offset directly. That turns a chain of dependent requests
+ * (each one waiting on the previous page's `next` link) into one request plus a
+ * parallel fan-out — the difference between ~40 serial round trips and ~7 for a
+ * large Liked Songs library.
+ *
  * @param {AuthSession} session - The session object containing the user's authentication information.
  * @param {string} firstUrl - The URL of the first page.
- * @return {Promise<any[]>} A promise that resolves to every item across all pages.
+ * @return {Promise<any[]>} A promise that resolves to every item across all pages, in order.
  */
 const collectAllPages = async (
   session: AuthSession,
   firstUrl: string,
 ): Promise<any[]> => {
-  const items: any[] = [];
-  let currUrl: string | null = firstUrl;
+  const firstPage = await customGet(firstUrl, session);
+  if (!firstPage?.items) {
+    return [];
+  }
 
-  while (currUrl) {
-    const page = await customGet(currUrl, session);
-    if (!page?.items) {
-      break;
+  const items: any[] = [...firstPage.items];
+  const limit: number = firstPage.limit || firstPage.items.length;
+  const total: number = firstPage.total ?? items.length;
+  const start: number = (firstPage.offset ?? 0) + limit;
+
+  // Endpoints that report no usable total still have to be walked link by link.
+  if (!limit || firstPage.total === undefined) {
+    let nextUrl: string | null = firstPage.next ?? null;
+    while (nextUrl) {
+      const page = await customGet(nextUrl, session);
+      if (!page?.items) {
+        break;
+      }
+      items.push(...page.items);
+      nextUrl = page.next ?? null;
     }
-    items.push(...page.items);
-    currUrl = page.next ?? null;
+    return items;
+  }
+
+  const offsets: number[] = [];
+  for (let offset = start; offset < total; offset += limit) {
+    offsets.push(offset);
+  }
+
+  // mapWithConcurrency preserves input order, so pages land in Spotify's order.
+  const pages = await mapWithConcurrency(offsets, PAGE_CONCURRENCY, (offset) =>
+    customGet(withOffset(firstUrl, offset), session),
+  );
+
+  for (const page of pages) {
+    if (page?.items) {
+      items.push(...page.items);
+    }
   }
 
   return items;
@@ -208,6 +270,51 @@ export const getTrackFromPlaylistLink = async (
   );
 
   return items.filter(Boolean);
+};
+
+/**
+ * Fetches the genres Spotify associates with a set of artists.
+ *
+ * Genre lives on the artist, not the track — there is no per-track genre in the
+ * Spotify API — so grouping results by genre means resolving the artists behind
+ * the matched tracks. Batched 50 at a time and fanned out, because this runs
+ * against the handful of artists in a result set rather than a whole library.
+ *
+ * @param {AuthSession} session - The session object containing the user's authentication information.
+ * @param {string[]} artistIds - Spotify artist ids.
+ * @return {Promise<Record<string, string[]>>} Genres keyed by artist id. Artists
+ *   Spotify has no genres for are present with an empty list.
+ */
+export const getArtistGenres = async (
+  session: AuthSession,
+  artistIds: string[],
+): Promise<Record<string, string[]>> => {
+  const unique = [...new Set(artistIds.filter(Boolean))];
+  if (unique.length === 0) {
+    return {};
+  }
+
+  const batches = chunkArray(unique, ARTIST_BATCH_SIZE);
+  const responses = await mapWithConcurrency(
+    batches,
+    PAGE_CONCURRENCY,
+    (batch) =>
+      customGet(
+        `https://api.spotify.com/v1/artists?ids=${batch.join(',')}`,
+        session,
+      ),
+  );
+
+  const genres: Record<string, string[]> = {};
+  for (const response of responses) {
+    for (const artist of (response?.artists ?? []) as (Artist | null)[]) {
+      if (artist?.id) {
+        genres[artist.id] = artist.genres ?? [];
+      }
+    }
+  }
+
+  return genres;
 };
 
 // NOTE: getTrackAnalysis / getManyTrackAnalysis used to live here, wrapping

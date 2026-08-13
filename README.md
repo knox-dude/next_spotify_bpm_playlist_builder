@@ -9,7 +9,9 @@ Spotify BPM Playlist Builder is a web app that lets users build playlists based 
 - Spotify OAuth for verification
 - View all the playlists created or followed by the user
 - Scan Liked Songs and your top tracks (last 4 weeks / 6 months / year)
-- Display all tracks from chosen sources that match BPM range
+- Display all tracks from chosen sources that match BPM range, grouped by
+  artist, album, genre, or tempo band — not by the playlist they came from,
+  which stops being interesting once a song has a tempo
 - Create new playlists with songs that match BPM range
 
 ## Where BPM data comes from
@@ -37,6 +39,30 @@ are simply left out of the results.
 Tempos are cached per server instance and de-duplicated across playlists, so a
 song appearing in ten playlists is looked up once.
 
+### Genre
+
+Spotify has no per-track or per-album genre — only artists carry one. Once a
+scan has its matches, the primary artist of each match is resolved through
+`/v1/artists` (50 per request) and the first genre listed is used for grouping.
+Artists Spotify has no genre for land in a "No genre" bucket that always sorts
+last.
+
+## How long a scan takes
+
+The work is bounded by two free APIs, so the pipeline is built to keep as much
+in flight as it safely can:
+
+| Stage | Shape |
+| --- | --- |
+| Paging one source | First page gives `total`, remaining pages fetched by offset, 6 at a time |
+| Collecting sources | 4 sources at a time, each its own server action |
+| Tempo lookups | 120 tracks per call, 3 calls at a time |
+| Providers | 3 ReccoBeats batches / 2 Deezer lookups per call, with 429 back-off |
+
+Pagination used to run in the browser — one server round trip per 50-track page,
+each waiting on the previous one's `next` link — which is what made a large
+library feel endless. It now happens inside a single server call per source.
+
 ### If a provider breaks
 
 The pipeline depends on undocumented behaviour of a free API (notably that
@@ -62,6 +88,17 @@ and slotting it into the cascade in `app/lib/bpm/index.ts`.
   +2pp — real, but it costs one extra Spotify search per missing track)
 
 ## Run Locally
+
+### Requirements
+
+**Node 24** (`Krypton`, the active LTS). Node 22 went into maintenance in October
+2025 and stops getting security fixes in April 2027, so the project is pinned
+ahead of that. The version lives in `.nvmrc` and in `engines` in `package.json`,
+which is also what Vercel reads when picking a runtime for the deployment.
+
+```bash
+  nvm use   # or: nvm install 24
+```
 
 Clone the project
 

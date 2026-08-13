@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { getAuthSession } from '../utils/serverUtils';
+import AppHeader from '../components/AppHeader';
 import BpmFormHolder from '../components/BpmFormHolder';
 
 export default async function Home() {
@@ -12,11 +13,11 @@ export default async function Home() {
   }
 
   return (
-    <section className="flex flex-col items-stretch">
-      <h1 className="mb-2 self-center text-center text-2xl font-bold sm:text-4xl">
-        BPM Playlist Builder
-      </h1>
-      <BpmFormHolder session={session} />
-    </section>
+    <>
+      <AppHeader />
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-24 pt-8 sm:px-6 sm:pt-12">
+        <BpmFormHolder session={session} />
+      </main>
+    </>
   );
 }

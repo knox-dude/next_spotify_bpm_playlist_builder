@@ -6,7 +6,6 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import BpmFormHolder from '../../components/BpmFormHolder';
 import { AuthSession } from '../../types/types';
-import { signOut } from 'next-auth/react';
 import useCreatePlaylist from '../../hooks/useCreatePlaylist';
 import useGenerateBpmSongs from '../../hooks/useGenerateBpmSongs';
 
@@ -32,51 +31,15 @@ jest.mock('../../components/BpmSubmitForm', () => ({
   ),
 }));
 
-jest.mock('../../components/ResultPlaylist', () => ({
+jest.mock('../../components/ResultsView', () => ({
   __esModule: true,
-  default: ({ playlist, tracks }: { playlist: any; tracks: any }) => (
+  default: ({ result }: { result: any }) => (
     <div>
-      <p>Result Playlist</p>
-      <p>{playlist.name}</p>
-      <p>{tracks.length} tracks</p>
+      <p>Results</p>
+      <p>{result.tracks.length} tracks</p>
+      <p>{result.sourceCount} sources</p>
     </div>
   ),
-}));
-
-jest.mock('../../components/SaveSongsButton', () => ({
-  __esModule: true,
-  default: ({ onClick }: { onClick: () => void }) => (
-    <button onClick={onClick}>Save Songs</button>
-  ),
-}));
-
-jest.mock('../../components/TextInput', () => ({
-  __esModule: true,
-  default: ({
-    className,
-    label,
-    value,
-    placeholder,
-    onChange,
-  }: {
-    className: string;
-    label: string;
-    value: string;
-    placeholder: string;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  }) => (
-    <input
-      className={className}
-      aria-label={label}
-      value={value}
-      placeholder={placeholder}
-      onChange={onChange}
-    />
-  ),
-}));
-
-jest.mock('next-auth/react', () => ({
-  signOut: jest.fn(),
 }));
 
 jest.mock('../../hooks/useCreatePlaylist', () => jest.fn());
@@ -95,10 +58,13 @@ const mockUseCreatePlaylist = {
   error: null,
 };
 
+const emptyResult = { tracks: [], scannedCount: 0, sourceCount: 0 };
+
 const mockUseGenerateBpmSongs = {
   generateSongs: jest.fn(),
   loading: false,
-  results: new Map(),
+  progress: null as { phase: string; done: number; total: number } | null,
+  result: emptyResult as any,
   completed: false,
   error: null,
   setCompleted: jest.fn(),
@@ -110,45 +76,41 @@ describe('BpmFormHolder', () => {
     (useGenerateBpmSongs as jest.Mock).mockReturnValue(mockUseGenerateBpmSongs);
   });
 
-  test('renders sign out button', () => {
-    render(<BpmFormHolder session={mockSession} />);
-
-    expect(screen.getByText('Sign out')).toBeInTheDocument();
-  });
-
-  test('calls sign out when sign out button is clicked', () => {
-    render(<BpmFormHolder session={mockSession} />);
-    fireEvent.click(screen.getByText('Sign out'));
-    expect(signOut).toHaveBeenCalled();
-  });
-
   test('renders BpmSubmitForm when not generating and not completed', () => {
     render(<BpmFormHolder session={mockSession} />);
     expect(screen.getByText('Generate BPM Songs')).toBeInTheDocument();
   });
 
-  test('shows loading spinner when generating', () => {
+  test('shows scan progress while generating', () => {
     mockUseGenerateBpmSongs.loading = true;
+    mockUseGenerateBpmSongs.progress = {
+      phase: 'tempos',
+      done: 40,
+      total: 200,
+    };
+
     render(<BpmFormHolder session={mockSession} />);
-    expect(
-      screen.getByText('Please sit back and relax, this could take a while...'),
-    ).toBeInTheDocument();
+
+    expect(screen.getByText('Looking up tempos')).toBeInTheDocument();
+    expect(screen.getByText('40 of 200 songs')).toBeInTheDocument();
   });
 
-  test('renders result playlists when completed', async () => {
-    const mockResults = new Map();
-    mockResults.set({ id: 'playlist1', name: 'Playlist 1' }, [
-      { id: 'track1' },
-    ]);
-    mockUseGenerateBpmSongs.results = mockResults;
+  test('renders the results when completed', async () => {
+    mockUseGenerateBpmSongs.result = {
+      tracks: [{ id: 'track1' }],
+      scannedCount: 30,
+      sourceCount: 2,
+    };
     mockUseGenerateBpmSongs.loading = false;
+    mockUseGenerateBpmSongs.progress = null;
     mockUseGenerateBpmSongs.completed = true;
 
     render(<BpmFormHolder session={mockSession} />);
 
     await waitFor(() => {
-      expect(screen.getByText('Playlist 1')).toBeInTheDocument();
+      expect(screen.getByText('Results')).toBeInTheDocument();
       expect(screen.getByText('1 tracks')).toBeInTheDocument();
+      expect(screen.getByText('2 sources')).toBeInTheDocument();
     });
   });
 
@@ -158,5 +120,13 @@ describe('BpmFormHolder', () => {
     render(<BpmFormHolder session={mockSession} />);
     fireEvent.click(screen.getByText('Generate BPM Songs'));
     expect(mockUseGenerateBpmSongs.generateSongs).toHaveBeenCalled();
+  });
+
+  test('surfaces a failed scan instead of silently returning to the form', () => {
+    mockUseGenerateBpmSongs.error = 'problem getting bpm songs: Error: nope' as any;
+
+    render(<BpmFormHolder session={mockSession} />);
+
+    expect(screen.getByRole('alert')).toHaveTextContent('problem getting bpm');
   });
 });

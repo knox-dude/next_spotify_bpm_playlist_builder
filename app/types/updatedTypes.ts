@@ -1271,4 +1271,10 @@ export interface Queue {
  */
 export interface TrackWithAudioFeature extends Track {
   analysis: TempoAnalysis;
+  /**
+   * Genres of the track's primary artist. Spotify has no per-track or per-album
+   * genre, so this is the closest thing available, and it is only filled in
+   * once a track has matched (see attachGenres in lib/generateBpmSongs).
+   */
+  genres?: string[];
 }

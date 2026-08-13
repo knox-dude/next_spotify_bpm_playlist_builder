@@ -97,8 +97,8 @@ describe('BpmSubmitForm', () => {
       );
     });
 
-    expect(screen.getByText('Choose BPM range')).toBeInTheDocument();
-    expect(screen.getByText('Choose options')).toBeInTheDocument();
+    expect(screen.getByText('Tempo range')).toBeInTheDocument();
+    expect(screen.getByText('Sources to scan')).toBeInTheDocument();
   });
 
   test('handles BPM input changes', async () => {
@@ -110,12 +110,8 @@ describe('BpmSubmitForm', () => {
         />,
       );
     });
-    const lowBpmInput = screen.getByPlaceholderText(
-      'Enter lower BPM',
-    ) as HTMLInputElement;
-    const highBpmInput = screen.getByPlaceholderText(
-      'Enter higher BPM',
-    ) as HTMLInputElement;
+    const lowBpmInput = screen.getByLabelText('lowBpm') as HTMLInputElement;
+    const highBpmInput = screen.getByLabelText('highBpm') as HTMLInputElement;
     await act(async () => {
       fireEvent.change(lowBpmInput, { target: { value: '60' } });
       fireEvent.change(highBpmInput, { target: { value: '120' } });
@@ -179,13 +175,9 @@ describe('BpmSubmitForm', () => {
       );
     });
 
-    const lowBpmInput = screen.getByPlaceholderText(
-      'Enter lower BPM',
-    ) as HTMLInputElement;
-    const highBpmInput = screen.getByPlaceholderText(
-      'Enter higher BPM',
-    ) as HTMLInputElement;
-    const generateButton = screen.getByRole('button', { name: /generate/i });
+    const lowBpmInput = screen.getByLabelText('lowBpm') as HTMLInputElement;
+    const highBpmInput = screen.getByLabelText('highBpm') as HTMLInputElement;
+    const generateButton = screen.getByRole('button', { name: /find matching songs/i });
     await act(async () => {
       fireEvent.change(lowBpmInput, { target: { value: '60' } });
       fireEvent.change(highBpmInput, { target: { value: '120' } });
@@ -214,7 +206,7 @@ describe('BpmSubmitForm', () => {
         />,
       );
     });
-    const generateButton = screen.getByRole('button', { name: /generate/i });
+    const generateButton = screen.getByRole('button', { name: /find matching songs/i });
 
     fireEvent.click(generateButton);
 
