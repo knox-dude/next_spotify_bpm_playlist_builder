@@ -54,7 +54,7 @@ in flight as it safely can:
 
 | Stage | Shape |
 | --- | --- |
-| Paging one source | First page gives `total`, remaining pages fetched by offset, 6 at a time |
+| Paging one source | First page gives `total`, remaining pages fetched by offset, 5 at a time |
 | Collecting sources | 4 sources at a time, each its own server action |
 | Tempo lookups | 120 tracks per call, 3 calls at a time |
 | Providers | 3 ReccoBeats batches / 2 Deezer lookups per call, with 429 back-off |
@@ -119,6 +119,14 @@ Install dependencies
   # or
   yarn
 ```
+
+### Dependency pins worth knowing about
+
+`overrides` in `package.json` forces fixed versions of four transitive
+packages (`postcss`, `sharp`, `glob`, `brace-expansion`) that their parents
+still ask for vulnerable versions of. They are all same-major bumps. Drop an
+override once its parent catches up - `npm audit` will stay quiet either way,
+which is the point of checking it rather than the override list.
 
 Install the environment variables and setup a spotify API secret
 
