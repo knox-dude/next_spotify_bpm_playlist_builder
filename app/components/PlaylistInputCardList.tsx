@@ -5,7 +5,7 @@ import { AuthSession } from '../types/types';
 import { Playlist } from '@/app/types/updatedTypes';
 import { getAllUserLikedPlaylists } from '../lib/actions';
 import { LIKED_SONGS_ID } from '../lib/generateBpmSongs';
-import { Audio } from 'react-loader-spinner';
+import Spinner from './Spinner';
 import { useSelectedPlaylists } from '../providers/SelectedPlaylistsProvider';
 import { GHOST_BUTTON } from './ui/styles';
 
@@ -80,7 +80,7 @@ function PlaylistInputCardList({ session }: { session: AuthSession }) {
     <>
       {loading && (
         <div className="flex w-full flex-col items-center justify-center gap-3 py-10">
-          <Audio color="#1DB954" height={56} width={56} />
+          <Spinner />
           <p className="text-sm font-semibold text-gray-400">
             Loading your playlists...
           </p>

@@ -67,3 +67,29 @@
     opacity: 1;
   }
 }
+
+/* The loading equalizer, bouncing at 120 BPM (60 / 120 = 0.5s per beat, so a
+   full down-up cycle takes two). Paired with .animate-bpm above, it keeps every
+   piece of motion in the app on the same beat. */
+@keyframes equalizer-bar {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.animate-equalizer {
+  animation: equalizer-bar 1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-equalizer {
+    animation: none;
+    transform: scaleY(0.65);
+  }
+}
